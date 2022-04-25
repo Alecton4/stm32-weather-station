@@ -1,0 +1,31 @@
+import rtconfig
+from building import *
+
+cwd = GetCurrentDir()
+
+src = Glob('../applications/*.c') + Glob('../drivers/*.c') + Glob('../libraries/STM32F1xx_HAL_Driver/Src/*.c') + Glob('../libraries/STM32F1xx_HAL_Driver/Src/Legacy/*.c') + Glob('../libraries/CMSIS/Device/ST/STM32F1xx/Source/Templates/*.c') + Glob('../libraries/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/*.S') 
+
+CPPPATH = [
+	cwd,
+	cwd + '/../drivers',
+	cwd + '/../libraries/STM32F1xx_HAL_Driver/Inc',
+	cwd + '/../libraries/STM32F1xx_HAL_Driver/Inc/Legacy',
+	cwd + '/../libraries/CMSIS/Include',
+	cwd + '/../libraries/CMSIS/RTOS/Template',
+	cwd + '/../libraries/CMSIS/Device/ST/STM32F1xx/Include',
+	cwd + '/../drivers/include',
+	cwd + '/../drivers/include/config',
+	str(Dir('#'))
+]
+
+CPPDEFINES = [
+	'SOC_FAMILY_STM32',
+	'SOC_SERIES_STM32F1',
+	'USE_HAL_DRIVER',
+	'STM32F103xE',
+]
+
+group = DefineGroup('Applications', src, depend = [''], CPPPATH = CPPPATH, CPPDEFINES = CPPDEFINES)
+
+Return('group')
+
