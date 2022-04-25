@@ -1057,44 +1057,17 @@
     </group>
     <group>
       <name>User</name>
-      <group>
-        <name>D:</name>
-        <group>
-          <name>workspace</name>
-          <group>
-            <name>ELEC3300</name>
-            <group>
-              <name>project</name>
-              <group>
-                <name>cubemx</name>
-                <file>
-                  <name>$PROJ_DIR$/../D:/workspace/ELEC3300/project/cubemx/Src/main.c</name>
-                </file>
-                <file>
-                  <name>$PROJ_DIR$/../D:/workspace/ELEC3300/project/cubemx/Src/stm32f1xx_it.c</name>
-                </file>
-                <file>
-                  <name>$PROJ_DIR$/../D:/workspace/ELEC3300/project/cubemx/Src/stm32f1xx_hal_msp.c</name>
-                </file>
-                <file>
-                  <name>$PROJ_DIR$/../D:/workspace/ELEC3300/project/cubemx/Src/stm32f1xx_hal_timebase_tim.c</name>
-                </file>
-              </group>
-            </group>
-          </group>
-        </group>
-      </group>
       <file>
-        <name>$PROJ_DIR$/../D:/workspace/ELEC3300/project/cubemx/Src/main.c</name>
+        <name>$PROJ_DIR$/../Src/main.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../D:/workspace/ELEC3300/project/cubemx/Src/stm32f1xx_it.c</name>
+        <name>$PROJ_DIR$/../Src/stm32f1xx_it.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../D:/workspace/ELEC3300/project/cubemx/Src/stm32f1xx_hal_msp.c</name>
+        <name>$PROJ_DIR$/../Src/stm32f1xx_hal_msp.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../D:/workspace/ELEC3300/project/cubemx/Src/stm32f1xx_hal_timebase_tim.c</name>
+        <name>$PROJ_DIR$/../Src/stm32f1xx_hal_timebase_tim.c</name>
       </file>
     </group>
   </group>
@@ -1140,9 +1113,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_sram.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c</name>

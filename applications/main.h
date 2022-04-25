@@ -10,6 +10,7 @@
 #include <board.h>
 #include <rtthread.h>
 #include <rtdevice.h>
+#include "stm32f1xx_hal.h"
 // for outputing debugging info
 #define DBG_TAG "main"
 #define DBG_LVL DBG_LOG
@@ -17,6 +18,7 @@
 
 #include "led_embedded.h"
 #include "key_embedded.h"
+#include "i2c_HMC5883L.h"
 
 /* Exported types ------------------------------------------------------------*/
 

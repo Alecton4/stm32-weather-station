@@ -15,8 +15,7 @@
 #include <drv_common.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /*-------------------------- CHIP CONFIG BEGIN --------------------------*/
@@ -29,21 +28,21 @@ extern "C"
 
 /*-------------------------- ROM/RAM CONFIG BEGIN --------------------------*/
 
-#define ROM_START              ((uint32_t)0x08000000)
-#define ROM_SIZE               (512 * 1024)
-#define ROM_END                ((uint32_t)(ROM_START + ROM_SIZE))
+#define ROM_START ((uint32_t)0x08000000)
+#define ROM_SIZE (512 * 1024)
+#define ROM_END ((uint32_t)(ROM_START + ROM_SIZE))
 
-#define RAM_START              (0x20000000)
-#define RAM_SIZE               (64 * 1024)
-#define RAM_END                (RAM_START + RAM_SIZE)
+#define RAM_START (0x20000000)
+#define RAM_SIZE (64 * 1024)
+#define RAM_END (RAM_START + RAM_SIZE)
 
 /*-------------------------- ROM/RAM CONFIG END --------------------------*/
 
 /*-------------------------- CLOCK CONFIG BEGIN --------------------------*/
 
-#define BSP_CLOCK_SOURCE                  ("HSI")
-#define BSP_CLOCK_SOURCE_FREQ_MHZ         ((int32_t)0)
-#define BSP_CLOCK_SYSTEM_FREQ_MHZ         ((int32_t)72)
+#define BSP_CLOCK_SOURCE ("HSI")
+#define BSP_CLOCK_SOURCE_FREQ_MHZ ((int32_t)0)
+#define BSP_CLOCK_SYSTEM_FREQ_MHZ ((int32_t)72)
 
 /*-------------------------- CLOCK CONFIG END --------------------------*/
 
@@ -77,8 +76,8 @@ extern "C"
  */
 
 #define BSP_USING_UART1
-#define BSP_UART1_TX_PIN       "PA9"
-#define BSP_UART1_RX_PIN       "PA10"
+#define BSP_UART1_TX_PIN "PA9"
+#define BSP_UART1_RX_PIN "PA10"
 
 /*-------------------------- UART CONFIG END --------------------------*/
 
@@ -97,15 +96,16 @@ extern "C"
  */
 
 /*#define BSP_USING_I2C1*/
+#define BSP_USING_I2C1
 #ifdef BSP_USING_I2C1
-#define BSP_I2C1_SCL_PIN    GET_PIN(port, pin)
-#define BSP_I2C1_SDA_PIN    GET_PIN(port, pin)
+#define BSP_I2C1_SCL_PIN GET_PIN(E, 5)
+#define BSP_I2C1_SDA_PIN GET_PIN(E, 6)
 #endif
 
 /*#define BSP_USING_I2C2*/
 #ifdef BSP_USING_I2C2
-#define BSP_I2C2_SCL_PIN    GET_PIN(port, pin)
-#define BSP_I2C2_SDA_PIN    GET_PIN(port, pin)
+#define BSP_I2C2_SCL_PIN GET_PIN(port, pin)
+#define BSP_I2C2_SDA_PIN GET_PIN(port, pin)
 #endif
 
 /*-------------------------- I2C CONFIG END --------------------------*/
