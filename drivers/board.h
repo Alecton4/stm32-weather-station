@@ -47,6 +47,16 @@ extern "C"
 
 /*-------------------------- CLOCK CONFIG END --------------------------*/
 
+/*-------------------------- GPIO CONFIG BEGIN --------------------------*/
+
+#define LED_EMBEDDED_R GET_PIN(B, 5)
+#define LED_EMBEDDED_G GET_PIN(B, 0)
+#define LED_EMBEDDED_B GET_PIN(B, 1)
+#define KEY1 GET_PIN(A, 0)
+#define KEY2 GET_PIN(C, 13)
+
+/*-------------------------- GPIO CONFIG END --------------------------*/
+
 /*-------------------------- UART CONFIG BEGIN --------------------------*/
 
 /** After configuring corresponding UART or UART DMA, you can use it.

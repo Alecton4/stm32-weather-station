@@ -5,24 +5,36 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2022-04-25     RT-Thread    first version
+ * 2022-04-22     AZ           INIT
  */
 
-#include <rtthread.h>
+#include "main.h"
 
-#define DBG_TAG "main"
-#define DBG_LVL DBG_LOG
-#include <rtdbg.h>
+// -------- VARIABLES --------
+rt_bool_t led_isOn = RT_FALSE;
+
+// -------- FUNCTION DECLARATION --------
 
 int main(void)
 {
-    int count = 1;
+	int count = 1;
+	led_embedded_init();
+	key_embedded_init();
 
-    while (count++)
-    {
-        LOG_D("Hello RT-Thread!");
-        rt_thread_mdelay(1000);
-    }
+	while (count++) {
+		if (key1_isPressed()) {
+			led_isOn = RT_TRUE;
+		} else if (key2_isPressed()) {
+			led_isOn = RT_FALSE;
+		}
+		if (led_isOn) {
+			led_embedded_blink(50);
+		} else {
+			led_embedded_off();
+		}
 
-    return RT_EOK;
+		rt_thread_mdelay(1000);
+	}
+
+	return RT_EOK;
 }
