@@ -8,8 +8,9 @@
 - [ ] Temperature measurement using BME280 (I2C).
 - [ ] Humidity measurement using BME280 (I2C).
 - [ ] Barometric pressure measurement using BME280 (I2C).
+- [ ] UV measurement using LTR390-UV-01 (I2C).
 - [ ] Ambient light measurement using LTR390-UV-01 (I2C).
-- [ ] Ambient sound measurement using LM386 (ADC).
+- [ ] Ambient sound detection using LM386 (ADC).
 - [ ] PM2.5 measurement using GP2Y1014AU0F (ADC).
 - [ ] GUI and touch control (FSMC, SPI).
 - [ ] LCD auto-adjusts brightness according to ambient light (I2C, PWM).
@@ -24,5 +25,8 @@
 ## CubeMX Config
 
 ## Dependencies
-RT-Thread (RTOS): https://github.com/RT-Thread/rt-thread <br/>
-LVGL (GUI library): https://github.com/lvgl/lvgl <br/>
+- RT-Thread (RTOS): https://github.com/RT-Thread/rt-thread
+- LVGL (GUI library): https://github.com/lvgl/lvgl
+
+## How to build
+See [RT-Thread documentation](https://www.rt-thread.org/document/site/#/development-tools/env/env).
