@@ -217,45 +217,40 @@ rt_err_t hmc5883l_set_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cm
 /**
  * This function initialize the hmc5883 device.
  *
- * @param dev_name the name of transfer device
- * @param param the i2c device address for i2c communication
+ * @param i2c_bus the name of transfer device
+ * @param addr the i2c device address for i2c communication
  *
  * @return the pointer of device driver structure, RT_NULL reprensents  initialization failed.
  */
-struct hmc5883l_device_struct *hmc5883l_init(const char *dev_name, rt_uint8_t param)
+struct hmc5883l_device_struct *hmc5883l_init(const char *i2c_bus, rt_uint8_t addr)
 {
 	struct hmc5883l_device_struct *dev = RT_NULL;
-	rt_uint8_t res = RT_EOK;
-
-	RT_ASSERT(dev_name);
-
 	dev = rt_calloc(1, sizeof(struct hmc5883l_device_struct));
 	if (dev == RT_NULL) {
-		LOG_E("Can't allocate memory for hmc5883 device on '%s' ", dev_name);
-		goto __exit;
+		LOG_E("Can't allocate memory for hmc5883 device on '%s' ", i2c_bus);
+		return RT_NULL;
 	}
 
-	dev->bus = rt_device_find(dev_name);
+	RT_ASSERT(i2c_bus);
+	dev->bus = rt_device_find(i2c_bus);
 	if (dev->bus == RT_NULL) {
-		LOG_E("Can't find device:'%s'", dev_name);
-		goto __exit;
+		LOG_E("Can't find device:'%s'", i2c_bus);
+		rt_free(dev);
+		return RT_NULL;
 	}
 
 	if (dev->bus->type == RT_Device_Class_I2CBUS) {
-		if (param != RT_NULL) {
-			dev->i2c_addr = param;
-		} else {
-			dev->i2c_addr = HMC5883L_ADDR;
-			LOG_D("Device i2c address is:'0x%x'!", dev->i2c_addr);
-		}
+		dev->i2c_addr = addr;
 	} else {
-		LOG_E("Unsupported device:'%s'!", dev_name);
-		goto __exit;
+		LOG_E("Unsupported device:'%s'!", i2c_bus);
+		rt_free(dev);
+		return RT_NULL;
 	}
 
 	if (self_test(dev) != RT_EOK) {
 		LOG_E("hmc5883 test self fail!");
-		goto __exit;
+		rt_free(dev);
+		return RT_NULL;
 	}
 
 	// hmc5883l_set_param(dev, HMC5883L_RANGE, HMC5883L_RANGE_1_9Ga);
@@ -263,21 +258,12 @@ struct hmc5883l_device_struct *hmc5883l_init(const char *dev_name, rt_uint8_t pa
 	// hmc5883l_set_param(dev, HMC5883L_RANGE, HMC5883L_RANGE_4_7Ga);
 	if ((write_reg(dev, 0x00, 0x70) != RT_EOK) || (write_reg(dev, 0x01, 0xA0) != RT_EOK)) {
 		LOG_E("hmc5883l cannot be configured!");
-		goto __exit;
-	}
-
-	if (res == RT_EOK) {
-		LOG_I("Device init succeed!");
-	} else {
-		LOG_W("Error in device initialization!");
-	}
-	return dev;
-
-__exit:
-	if (dev != RT_NULL) {
 		rt_free(dev);
+		return RT_NULL;
 	}
-	return RT_NULL;
+
+	LOG_I("Device init succeed!");
+	return dev;
 }
 
 /**
@@ -288,7 +274,6 @@ __exit:
 void hmc5883l_destroy(struct hmc5883l_device_struct *dev)
 {
 	RT_ASSERT(dev);
-
 	rt_free(dev);
 }
 
@@ -308,12 +293,11 @@ rt_err_t hmc5883l_get_data(struct hmc5883l_device_struct *dev, struct hmc5883l_d
 		if (write_reg(dev, 0x02, 0x01) != RT_EOK) {
 			return RT_ERROR;
 		}
-
-		rt_uint8_t configs[3];
-		if (read_regs(dev, 0x00, 3, configs) != RT_EOK) {
-			return RT_ERROR;
-		}
 		// for debugging
+		// rt_uint8_t configs[3];
+		// if (read_regs(dev, 0x00, 3, configs) != RT_EOK) {
+		// 	return RT_ERROR;
+		// }
 		// LOG_E("0x00: 0x%02X", configs[0]);
 		// LOG_E("0x01: 0x%02X", configs[1]);
 		// LOG_E("0x02: 0x%02X", configs[2]);

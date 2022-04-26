@@ -3,7 +3,7 @@
 
 #include "main.h"
 
-#define HMC5883L_I2C_BUS_NAME "i2c1"
+#define HMC5883L_I2C_BUS "i2c1"
 #define HMC5883L_ADDR 0x1E
 #define HMC5883L_CONFIG_A 0x70
 #define HMC5883L_CONFIG_B 0xA0
@@ -70,7 +70,7 @@ struct hmc5883l_device_struct {
 	float range_scale;
 };
 
-struct hmc5883l_device_struct *hmc5883l_init(const char *dev_name, rt_uint8_t param);
+struct hmc5883l_device_struct *hmc5883l_init(const char *i2c_bus, rt_uint8_t addr);
 void hmc5883l_destroy(struct hmc5883l_device_struct *dev);
 rt_err_t hmc5883l_get_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cmd cmd, rt_uint8_t *param);
 rt_err_t hmc5883l_set_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cmd cmd, rt_uint8_t param);
