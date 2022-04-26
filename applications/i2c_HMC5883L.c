@@ -1,10 +1,10 @@
 #include "i2c_HMC5883L.h"
 
 /**
- * This function reads the value of registers for hmc5883
+ * This function reads the value of registers for hmc5883l
  *
  * @param dev the pointer of device driver structure
- * @param reg the register for hmc5883
+ * @param reg the register for hmc5883l
  * @param len number of register
  * @param buf read data pointer
  *
@@ -36,10 +36,10 @@ static rt_err_t read_regs(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt
 }
 
 /**
- * This function reads multi-bit value of registers for hmc5883
+ * This function reads multi-bit value of registers for hmc5883l
  *
  * @param dev the pointer of device driver structure
- * @param reg the register for hmc5883
+ * @param reg the register for hmc5883l
  * @param start_bit the start position of the register
  * @param len number of bits to write
  * @param data read data pointer
@@ -66,10 +66,10 @@ static rt_err_t read_bits(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt
 }
 
 /**
- * This function writes the value of the register for hmc5883
+ * This function writes the value of the register for hmc5883l
  *
  * @param dev the pointer of device driver structure
- * @param reg the register for hmc5883
+ * @param reg the register for hmc5883l
  * @param data value to write
  *
  * @return the writing status, RT_EOK represents writing the value of the register successfully.
@@ -141,7 +141,7 @@ rt_err_t self_test(struct hmc5883l_device_struct *dev)
 }
 
 /**
- * This function gets hmc5883 parameters.
+ * This function gets hmc5883l parameters.
  *
  * @param dev the pointer of device driver structure
  * @param cmd Configuration item
@@ -179,7 +179,7 @@ rt_err_t hmc5883l_get_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cm
 }
 
 /**
- * This function set hmc5883 parameters.
+ * This function set hmc5883l parameters.
  *
  * @param dev the pointer of device driver structure
  * @param cmd Configuration item
@@ -216,7 +216,7 @@ rt_err_t hmc5883l_set_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cm
 }
 
 /**
- * This function initialize the hmc5883 device.
+ * This function initialize the hmc5883l device.
  *
  * @param i2c_bus the name of transfer device
  * @param addr the i2c device address for i2c communication
@@ -228,7 +228,7 @@ struct hmc5883l_device_struct *hmc5883l_init(const char *i2c_bus, rt_uint8_t add
 	struct hmc5883l_device_struct *dev = RT_NULL;
 	dev = rt_calloc(1, sizeof(struct hmc5883l_device_struct));
 	if (dev == RT_NULL) {
-		LOG_E("Can't allocate memory for hmc5883 device on '%s' ", i2c_bus);
+		LOG_E("Can't allocate memory for hmc5883l device on '%s' ", i2c_bus);
 		return RT_NULL;
 	}
 
@@ -249,7 +249,7 @@ struct hmc5883l_device_struct *hmc5883l_init(const char *i2c_bus, rt_uint8_t add
 	}
 
 	if (self_test(dev) != RT_EOK) {
-		LOG_E("hmc5883 test self fail!");
+		LOG_E("hmc5883l test self fail!");
 		rt_free(dev);
 		return RT_NULL;
 	}
