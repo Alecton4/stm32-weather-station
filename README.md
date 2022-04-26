@@ -23,6 +23,7 @@
 - [ ] System crash detection and auto reboot (IWDG).
 
 ## CubeMX Config
+<img src="img/CubeMX.png" width="1024">
 
 ## Dependencies
 - RT-Thread (RTOS): https://github.com/RT-Thread/rt-thread
