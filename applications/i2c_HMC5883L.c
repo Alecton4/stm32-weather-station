@@ -12,9 +12,9 @@
  */
 static rt_err_t read_regs(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt_uint8_t len, rt_uint8_t *buf)
 {
-	rt_int8_t res = 0;
-	struct rt_i2c_msg msgs[2];
 	if (dev->bus->type == RT_Device_Class_I2CBUS) {
+		struct rt_i2c_msg msgs[2];
+
 		msgs[0].addr = dev->i2c_addr; /* Slave address */
 		msgs[0].flags = RT_I2C_WR; /* Write flag */
 		msgs[0].buf = &reg; /* Slave register address */
@@ -26,12 +26,13 @@ static rt_err_t read_regs(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt
 		msgs[1].len = len; /* Number of bytes read */
 
 		if (rt_i2c_transfer((struct rt_i2c_bus_device *)dev->bus, msgs, 2) == 2) {
-			res = RT_EOK;
+			return RT_EOK;
 		} else {
-			res = -RT_ERROR;
+			return RT_ERROR;
 		}
+	} else {
+		return RT_ERROR;
 	}
-	return res;
 }
 
 /**
@@ -75,25 +76,25 @@ static rt_err_t read_bits(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt
  */
 static rt_err_t write_reg(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt_uint8_t data)
 {
-	rt_int8_t res = 0;
-	rt_uint8_t tmp[2];
-	struct rt_i2c_msg msg;
-	tmp[0] = reg;
-	tmp[1] = data;
-
 	if (dev->bus->type == RT_Device_Class_I2CBUS) {
+		rt_uint8_t tmp[2];
+		tmp[0] = reg;
+		tmp[1] = data;
+
+		struct rt_i2c_msg msg;
 		msg.addr = dev->i2c_addr; /* slave address */
 		msg.flags = RT_I2C_WR; /* write flag */
 		msg.buf = tmp; /* Send data pointer */
 		msg.len = 2;
 
 		if (rt_i2c_transfer((struct rt_i2c_bus_device *)dev->bus, &msg, 1) == 1) {
-			res = RT_EOK;
+			return RT_EOK;
 		} else {
-			res = -RT_ERROR;
+			return RT_ERROR;
 		}
+	} else {
+		return RT_ERROR;
 	}
-	return res;
 }
 
 /**
@@ -135,7 +136,7 @@ rt_err_t self_test(struct hmc5883l_device_struct *dev)
 	if (data[0] == 0x48 && data[1] == 0x34 && data[2] == 0x33) {
 		return RT_EOK;
 	} else {
-		return -RT_ERROR;
+		return RT_ERROR;
 	}
 }
 
@@ -207,7 +208,7 @@ rt_err_t hmc5883l_set_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cm
 		break;
 	case HMC5883L_OPER_MODE:
 		res = write_bits(dev, 0x02, 1, 2, param);
-		dev->config.oprt_mode = param;
+		dev->config.oper_mode = param;
 		break;
 	}
 

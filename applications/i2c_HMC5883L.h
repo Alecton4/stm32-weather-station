@@ -58,7 +58,7 @@ struct hmc5883l_config_struct {
 	rt_uint16_t range;
 	rt_uint16_t odr;
 	rt_uint8_t meas_mode;
-	rt_uint8_t oprt_mode;
+	rt_uint8_t oper_mode;
 };
 
 /* hmc5883 device structure */
