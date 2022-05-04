@@ -24,6 +24,7 @@ enum hmc5883l_sample_num {
 	HMC5883L_SAMPLES_AVER_8 = 3
 };
 
+// Data Outout Rate
 enum hmc5883l_dor {
 	HMC5883L_DOR_0_75Hz = 0,
 	HMC5883L_DOR_1_5Hz = 1,
@@ -55,25 +56,25 @@ struct hmc5883l_data_struct {
 };
 
 struct hmc5883l_config_struct {
+	rt_uint8_t sample_num;
+	rt_uint16_t dor;
 	rt_uint16_t range;
-	rt_uint16_t odr;
-	rt_uint8_t meas_mode;
 	rt_uint8_t oper_mode;
 };
 
 /* hmc5883 device structure */
 struct hmc5883l_device_struct {
 	rt_device_t bus;
-	rt_uint8_t id;
+	// rt_uint8_t id;
 	rt_uint8_t i2c_addr;
 	struct hmc5883l_config_struct config;
-	float range_scale;
+	// float range_scale;
 };
 
-struct hmc5883l_device_struct *hmc5883l_init(const char *i2c_bus, rt_uint8_t addr);
-void hmc5883l_destroy(struct hmc5883l_device_struct *dev);
-rt_err_t hmc5883l_get_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cmd cmd, rt_uint8_t *param);
-rt_err_t hmc5883l_set_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cmd cmd, rt_uint8_t param);
-rt_err_t hmc5883l_get_data(struct hmc5883l_device_struct *dev, struct hmc5883l_data_struct *data);
+rt_err_t my_hmc5883l_get_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cmd cmd, rt_uint8_t *param);
+rt_err_t my_hmc5883l_set_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cmd cmd, rt_uint8_t param);
+struct hmc5883l_device_struct *my_hmc5883l_init(const char *i2c_bus_name, rt_uint8_t addr);
+void my_hmc5883l_destroy(struct hmc5883l_device_struct *hmc5883l);
+rt_err_t my_hmc5883l_get_data(struct hmc5883l_device_struct *hmc5883l, struct hmc5883l_data_struct *data);
 
 #endif

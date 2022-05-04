@@ -13,11 +13,13 @@
 // -------- VARIABLES --------
 rt_bool_t led_isOn = RT_FALSE;
 
-struct hmc5883l_device_struct *hmc5883l = RT_NULL;
-struct hmc5883l_data_struct hmc5883l_data;
 rt_tick_t hmc5883l_prev_milli = 0;
 rt_tick_t hmc5883l_curr_milli = 0;
 const rt_tick_t HMC5883L_DELAY = 1000;
+
+rt_tick_t bme280_prev_milli = 0;
+rt_tick_t bme280_curr_milli = 0;
+const rt_tick_t BME280_DELAY = 1000;
 
 // -------- HAL VARIABLES --------
 
@@ -31,7 +33,14 @@ int main(void)
 
 	led_embedded_init();
 	key_embedded_init();
-	hmc5883l = hmc5883l_init(HMC5883L_I2C_BUS, HMC5883L_ADDR);
+
+	struct hmc5883l_device_struct *hmc5883l = RT_NULL;
+	struct hmc5883l_data_struct hmc5883l_rawData;
+	hmc5883l = my_hmc5883l_init(HMC5883L_I2C_BUS, HMC5883L_ADDR);
+
+	struct bme280_device_struct *bme280 = RT_NULL;
+	struct bme280_data bme280_rawData;
+	bme280 = my_bme280_init(BME280_I2C_BUS, BME280_ADDR);
 
 	while (count++) {
 		if (key1_isPressed()) {
@@ -46,12 +55,29 @@ int main(void)
 		}
 
 		hmc5883l_curr_milli = rt_tick_get_millisecond();
-		if (hmc5883l_curr_milli - hmc5883l_prev_milli >= HMC5883L_DELAY) {
+		if ((hmc5883l_curr_milli - hmc5883l_prev_milli >= HMC5883L_DELAY) && (hmc5883l != RT_NULL)) {
 			hmc5883l_prev_milli = hmc5883l_curr_milli;
-			hmc5883l_get_data(hmc5883l, &hmc5883l_data);
-			LOG_D("x: %d", hmc5883l_data.x);
-			LOG_D("y: %d", hmc5883l_data.y);
-			LOG_D("z: %d", hmc5883l_data.z);
+			if (my_hmc5883l_get_data(hmc5883l, &hmc5883l_rawData) == RT_EOK) {
+				LOG_D("x: %d", hmc5883l_rawData.x);
+				LOG_D("y: %d", hmc5883l_rawData.y);
+				LOG_D("z: %d", hmc5883l_rawData.z);
+			} else {
+				LOG_E("HMC5883L get data failed!");
+				my_hmc5883l_destroy(hmc5883l);
+			}
+		}
+
+		bme280_curr_milli = rt_tick_get_millisecond();
+		if ((bme280_curr_milli - bme280_prev_milli >= BME280_DELAY) && (bme280 != RT_NULL)) {
+			bme280_prev_milli = bme280_curr_milli;
+			if (my_bme280_get_data(bme280, &bme280_rawData) == RT_EOK) {
+				LOG_D("temperature: %0.2f *C", bme280_rawData.temperature);
+				LOG_D("humidity: %0.2f %%", bme280_rawData.humidity);
+				LOG_D("baro pressure: %0.2f hPa", bme280_rawData.pressure / 100);
+			} else {
+				LOG_E("BME280 get data failed!");
+				my_bme280_destroy(bme280);
+			}
 		}
 	}
 
