@@ -6,14 +6,15 @@ static struct rt_i2c_bus_device *i2c_bus_toBeUsed;
  * Return control or wait,
  * for a period amount of milliseconds
  */
-static void my_delay_ms(uint32_t period)
+static void my_delay_ms(uint32_t milliseconds)
 {
-	rt_thread_mdelay(period);
+	rt_thread_mdelay(milliseconds);
 }
 
 /*
  * int8_t user_i2c_read(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len)
  * The parameter dev_id can be used as a variable to store the I2C address of the device
+ *
  * Data on the bus should be like
  * |------------+---------------------|
  * | I2C action | Data                |
@@ -27,6 +28,11 @@ static void my_delay_ms(uint32_t period)
  * | Read       | (reg_data[len - 1]) |
  * | Stop       | -                   |
  * |------------+---------------------|
+ *
+ * @param addr the i2c address of the device
+ * @param reg the register for bme280
+ * @param data read data pointer
+ * @param len number of register
  */
 static rt_err_t read_regs(rt_uint8_t addr, rt_uint8_t reg, rt_uint8_t *data, rt_uint16_t len)
 {
@@ -43,16 +49,17 @@ static rt_err_t read_regs(rt_uint8_t addr, rt_uint8_t reg, rt_uint8_t *data, rt_
 	msgs[1].buf = data; /* Read data pointer */
 	msgs[1].len = len; /* Number of bytes read */
 
-	if (rt_i2c_transfer(i2c_bus_toBeUsed, msgs, 2) != 2) {
-		return -RT_ERROR;
-	} else {
+	if (rt_i2c_transfer(i2c_bus_toBeUsed, msgs, 2) == 2) {
 		return RT_EOK;
+	} else {
+		return -RT_ERROR;
 	}
 }
 
 /*
  * int8_t user_i2c_write(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len)
  * The parameter dev_id can be used as a variable to store the I2C address of the device
+ *
  * Data on the bus should be like
  * |------------+---------------------|
  * | I2C action | Data                |
@@ -64,6 +71,11 @@ static rt_err_t read_regs(rt_uint8_t addr, rt_uint8_t reg, rt_uint8_t *data, rt_
  * | Write      | (reg_data[len - 1]) |
  * | Stop       | -                   |
  * |------------+---------------------|
+ *
+ * @param addr the i2c address of the device
+ * @param reg the register for bme280
+ * @param data read data pointer
+ * @param len number of register
  */
 static rt_err_t write_regs(rt_uint8_t addr, rt_uint8_t reg, rt_uint8_t *data, rt_uint16_t len)
 {
@@ -80,10 +92,10 @@ static rt_err_t write_regs(rt_uint8_t addr, rt_uint8_t reg, rt_uint8_t *data, rt
 	msgs[1].buf = data; /* Write data pointer */
 	msgs[1].len = len; /* Number of bytes write */
 
-	if (rt_i2c_transfer(i2c_bus_toBeUsed, msgs, 2) != 2) {
-		return -RT_ERROR;
-	} else {
+	if (rt_i2c_transfer(i2c_bus_toBeUsed, msgs, 2) == 2) {
 		return RT_EOK;
+	} else {
+		return -RT_ERROR;
 	}
 }
 
