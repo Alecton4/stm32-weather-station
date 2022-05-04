@@ -28,10 +28,10 @@ static rt_err_t read_regs(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt
 		if (rt_i2c_transfer((struct rt_i2c_bus_device *)dev->bus, msgs, 2) == 2) {
 			return RT_EOK;
 		} else {
-			return RT_ERROR;
+			return -RT_ERROR;
 		}
 	} else {
-		return RT_ERROR;
+		return -RT_ERROR;
 	}
 }
 
@@ -77,23 +77,23 @@ static rt_err_t read_bits(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt
 static rt_err_t write_reg(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt_uint8_t data)
 {
 	if (dev->bus->type == RT_Device_Class_I2CBUS) {
-		rt_uint8_t tmp[2];
-		tmp[0] = reg;
-		tmp[1] = data;
+		rt_uint8_t buffer[2];
+		buffer[0] = reg;
+		buffer[1] = data;
 
 		struct rt_i2c_msg msg;
 		msg.addr = dev->i2c_addr; /* slave address */
 		msg.flags = RT_I2C_WR; /* write flag */
-		msg.buf = tmp; /* Send data pointer */
+		msg.buf = buffer; /* Send data pointer */
 		msg.len = 2;
 
 		if (rt_i2c_transfer((struct rt_i2c_bus_device *)dev->bus, &msg, 1) == 1) {
 			return RT_EOK;
 		} else {
-			return RT_ERROR;
+			return -RT_ERROR;
 		}
 	} else {
-		return RT_ERROR;
+		return -RT_ERROR;
 	}
 }
 
@@ -136,7 +136,7 @@ rt_err_t self_test(struct hmc5883l_device_struct *dev)
 	if (data[0] == 0x48 && data[1] == 0x34 && data[2] == 0x33) {
 		return RT_EOK;
 	} else {
-		return RT_ERROR;
+		return -RT_ERROR;
 	}
 }
 
@@ -149,7 +149,7 @@ rt_err_t self_test(struct hmc5883l_device_struct *dev)
  *
  * @return the reading status, RT_EOK represents reading the data successfully.
  */
-rt_err_t hmc5883l_get_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cmd cmd, rt_uint8_t *param)
+rt_err_t my_hmc5883l_get_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cmd cmd, rt_uint8_t *param)
 {
 	rt_uint8_t data = 0;
 	rt_err_t res = RT_EOK;
@@ -187,7 +187,7 @@ rt_err_t hmc5883l_get_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cm
  *
  * @return the setting status, RT_EOK reprensents  setting the parameter successfully.
  */
-rt_err_t hmc5883l_set_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cmd cmd, rt_uint8_t param)
+rt_err_t my_hmc5883l_set_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cmd cmd, rt_uint8_t param)
 {
 	rt_err_t res = RT_EOK;
 
@@ -196,11 +196,11 @@ rt_err_t hmc5883l_set_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cm
 	switch (cmd) {
 	case HMC5883L_SAMPLE_NUM:
 		res = write_bits(dev, 0x00, 5, 2, param);
-		dev->config.meas_mode = param;
+		dev->config.sample_num = param;
 		break;
 	case HMC5883L_DOR:
 		res = write_bits(dev, 0x00, 2, 3, param);
-		dev->config.odr = param;
+		dev->config.dor = param;
 		break;
 	case HMC5883L_RANGE:
 		res = write_bits(dev, 0x01, 5, 3, param);
@@ -218,94 +218,96 @@ rt_err_t hmc5883l_set_param(struct hmc5883l_device_struct *dev, enum hmc5883l_cm
 /**
  * This function initialize the hmc5883l device.
  *
- * @param i2c_bus the name of transfer device
+ * @param i2c_bus_name the name of transfer device
  * @param addr the i2c device address for i2c communication
  *
  * @return the pointer of device driver structure, RT_NULL reprensents  initialization failed.
  */
-struct hmc5883l_device_struct *hmc5883l_init(const char *i2c_bus, rt_uint8_t addr)
+struct hmc5883l_device_struct *my_hmc5883l_init(const char *i2c_bus_name, rt_uint8_t addr)
 {
-	struct hmc5883l_device_struct *dev = RT_NULL;
-	dev = rt_calloc(1, sizeof(struct hmc5883l_device_struct));
-	if (dev == RT_NULL) {
-		LOG_E("Can't allocate memory for hmc5883l device on '%s' ", i2c_bus);
+	struct hmc5883l_device_struct *hmc5883l = RT_NULL;
+	hmc5883l = rt_calloc(1, sizeof(struct hmc5883l_device_struct));
+	if (hmc5883l == RT_NULL) {
+		LOG_E("Can't allocate memory for hmc5883l device on '%s' ", i2c_bus_name);
 		return RT_NULL;
 	}
 
-	RT_ASSERT(i2c_bus);
-	dev->bus = rt_device_find(i2c_bus);
-	if (dev->bus == RT_NULL) {
-		LOG_E("Can't find device:'%s'", i2c_bus);
-		rt_free(dev);
+	RT_ASSERT(i2c_bus_name);
+	hmc5883l->bus = rt_device_find(i2c_bus_name);
+	if (hmc5883l->bus == RT_NULL) {
+		LOG_E("Can't find device:'%s'", i2c_bus_name);
+		rt_free(hmc5883l);
 		return RT_NULL;
 	}
 
-	if (dev->bus->type == RT_Device_Class_I2CBUS) {
-		dev->i2c_addr = addr;
+	if (hmc5883l->bus->type == RT_Device_Class_I2CBUS) {
+		hmc5883l->i2c_addr = addr;
 	} else {
-		LOG_E("Unsupported device:'%s'!", i2c_bus);
-		rt_free(dev);
+		LOG_E("Unsupported device:'%s'!", i2c_bus_name);
+		rt_free(hmc5883l);
 		return RT_NULL;
 	}
 
-	if (self_test(dev) != RT_EOK) {
+	if (self_test(hmc5883l) != RT_EOK) {
 		LOG_E("hmc5883l test self fail!");
-		rt_free(dev);
+		rt_free(hmc5883l);
 		return RT_NULL;
 	}
 
-	// hmc5883l_set_param(dev, HMC5883L_RANGE, HMC5883L_RANGE_1_9Ga);
-	// hmc5883l_set_param(dev, HMC5883L_DOR, HMC5883L_DOR_15Hz);
-	// hmc5883l_set_param(dev, HMC5883L_RANGE, HMC5883L_RANGE_4_7Ga);
-	if ((write_reg(dev, 0x00, 0x70) != RT_EOK) || (write_reg(dev, 0x01, 0xA0) != RT_EOK)) {
+	// my_hmc5883l_set_param(hmc5883l, HMC5883L_RANGE, HMC5883L_RANGE_1_9Ga);
+	// my_hmc5883l_set_param(hmc5883l, HMC5883L_DOR, HMC5883L_DOR_15Hz);
+	// my_hmc5883l_set_param(hmc5883l, HMC5883L_RANGE, HMC5883L_RANGE_4_7Ga);
+	// set parameters
+	if ((write_reg(hmc5883l, 0x00, 0x70) != RT_EOK) || (write_reg(hmc5883l, 0x01, 0xA0) != RT_EOK)) {
 		LOG_E("hmc5883l cannot be configured!");
-		rt_free(dev);
+		rt_free(hmc5883l);
 		return RT_NULL;
 	}
 
 	LOG_I("Device init succeed!");
-	return dev;
+	return hmc5883l;
 }
 
 /**
  * This function releases memory
  *
- * @param dev the pointer of device driver structure
+ * @param hmc5883l the pointer of device driver structure
  */
-void hmc5883l_destroy(struct hmc5883l_device_struct *dev)
+void my_hmc5883l_destroy(struct hmc5883l_device_struct *hmc5883l)
 {
-	RT_ASSERT(dev);
-	rt_free(dev);
+	RT_ASSERT(hmc5883l);
+	rt_free(hmc5883l);
 }
 
 /**
  * This function gets the raw data of the mag
  *
- * @param dev the pointer of device driver structure
+ * @param hmc5883l the pointer of device driver structure
  * @param data the pointer of 3axes structure for receive data
  *
  * @return the reading status, RT_EOK represents reading the data successfully.
  */
-rt_err_t hmc5883l_get_data(struct hmc5883l_device_struct *dev, struct hmc5883l_data_struct *data)
+rt_err_t my_hmc5883l_get_data(struct hmc5883l_device_struct *hmc5883l, struct hmc5883l_data_struct *data)
 {
-	if (dev == RT_NULL || data == RT_NULL) {
-		return RT_ERROR;
+	if (hmc5883l == RT_NULL || data == RT_NULL) {
+		return -RT_ERROR;
 	} else {
-		if (write_reg(dev, 0x02, 0x01) != RT_EOK) {
-			return RT_ERROR;
+		// set single measure mode
+		if (write_reg(hmc5883l, 0x02, 0x01) != RT_EOK) {
+			return -RT_ERROR;
 		}
 		// for debugging
 		// rt_uint8_t configs[3];
-		// if (read_regs(dev, 0x00, 3, configs) != RT_EOK) {
-		// 	return RT_ERROR;
+		// if (read_regs(hmc5883l, 0x00, 3, configs) != RT_EOK) {
+		// 	return -RT_ERROR;
 		// }
 		// LOG_E("0x00: 0x%02X", configs[0]);
 		// LOG_E("0x01: 0x%02X", configs[1]);
 		// LOG_E("0x02: 0x%02X", configs[2]);
 
-		rt_uint8_t buffer[10];
-		if (read_regs(dev, 0x03, 6, buffer) != RT_EOK) {
-			return RT_ERROR;
+		rt_uint8_t buffer[6];
+		if (read_regs(hmc5883l, 0x03, 6, buffer) != RT_EOK) {
+			return -RT_ERROR;
 		}
 		data->x = (rt_int16_t)(((buffer[0]) << 8) | buffer[1]);
 		data->y = (rt_int16_t)(((buffer[4]) << 8) | buffer[5]);
