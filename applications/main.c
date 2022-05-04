@@ -21,6 +21,10 @@ rt_tick_t bme280_prev_milli = 0;
 rt_tick_t bme280_curr_milli = 0;
 const rt_tick_t BME280_DELAY = 1000;
 
+rt_tick_t ltr390_prev_milli = 0;
+rt_tick_t ltr390_curr_milli = 0;
+const rt_tick_t LTR390_DELAY = 1000;
+
 // -------- HAL VARIABLES --------
 
 // -------- FUNCTION DECLARATION --------
@@ -41,6 +45,10 @@ int main(void)
 	struct bme280_device_struct *bme280 = RT_NULL;
 	struct bme280_data bme280_rawData;
 	bme280 = my_bme280_init(BME280_I2C_BUS, BME280_ADDR);
+
+	struct ltr390_device_struct *ltr390 = RT_NULL;
+	struct ltr390_data_struct ltr390_rawData;
+	ltr390 = my_ltr390_init(LTR390_I2C_BUS, LTR390_ADDR);
 
 	while (count++) {
 		if (key1_isPressed()) {
@@ -71,12 +79,24 @@ int main(void)
 		if ((bme280_curr_milli - bme280_prev_milli >= BME280_DELAY) && (bme280 != RT_NULL)) {
 			bme280_prev_milli = bme280_curr_milli;
 			if (my_bme280_get_data(bme280, &bme280_rawData) == RT_EOK) {
-				LOG_D("temperature: %0.2f *C", bme280_rawData.temperature);
-				LOG_D("humidity: %0.2f %%", bme280_rawData.humidity);
-				LOG_D("baro pressure: %0.2f hPa", bme280_rawData.pressure / 100);
+				LOG_D("temperature: %0.2f", bme280_rawData.temperature);
+				LOG_D("humidity: %0.2f", bme280_rawData.humidity);
+				LOG_D("baro pressure: %0.2f", bme280_rawData.pressure / 100);
 			} else {
 				LOG_E("BME280 get data failed!");
 				my_bme280_destroy(bme280);
+			}
+		}
+
+		ltr390_curr_milli = rt_tick_get_millisecond();
+		if ((ltr390_curr_milli - ltr390_prev_milli >= LTR390_DELAY) && (ltr390 != RT_NULL)) {
+			ltr390_prev_milli = ltr390_curr_milli;
+			if (my_ltr390_get_data(ltr390, &ltr390_rawData) == RT_EOK) {
+				LOG_D("al: %0.2f", ltr390_rawData.al);
+				LOG_D("uv: %d", ltr390_rawData.uv);
+			} else {
+				LOG_E("LTR390 get data failed!");
+				my_ltr390_destroy(ltr390);
 			}
 		}
 	}
