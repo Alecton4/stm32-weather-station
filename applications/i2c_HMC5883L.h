@@ -62,7 +62,7 @@ struct hmc5883l_config_struct {
 	rt_uint8_t oper_mode;
 };
 
-/* hmc5883 device structure */
+/* hmc5883l device structure */
 struct hmc5883l_device_struct {
 	rt_device_t bus;
 	// rt_uint8_t id;

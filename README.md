@@ -5,11 +5,11 @@
 ## Demo Video
 
 ## Features
-- [ ] Temperature measurement using BME280 (I2C).
-- [ ] Humidity measurement using BME280 (I2C).
-- [ ] Barometric pressure measurement using BME280 (I2C).
-- [ ] UV measurement using LTR390-UV-01 (I2C).
-- [ ] Ambient light measurement using LTR390-UV-01 (I2C).
+- [x] Temperature measurement using BME280 (I2C).
+- [x] Humidity measurement using BME280 (I2C).
+- [x] Barometric pressure measurement using BME280 (I2C).
+- [x] UV measurement using LTR390-UV-01 (I2C).
+- [x] Ambient light measurement using LTR390-UV-01 (I2C).
 - [ ] Ambient sound detection using LM386 (ADC).
 - [ ] PM2.5 measurement using GP2Y1014AU0F (ADC).
 - [ ] Environment measurement data can be displayed on LCD and stored in SD card for further analysis (FSMC, SDIO).

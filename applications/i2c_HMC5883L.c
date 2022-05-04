@@ -5,12 +5,12 @@
  *
  * @param dev the pointer of device driver structure
  * @param reg the register for hmc5883l
- * @param len number of register
  * @param buf read data pointer
+ * @param len number of register
  *
  * @return the reading status, RT_EOK represents reading the value of registers successfully.
  */
-static rt_err_t read_regs(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt_uint8_t len, rt_uint8_t *buf)
+static rt_err_t read_regs(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt_uint8_t *buf, rt_uint8_t len)
 {
 	if (dev->bus->type == RT_Device_Class_I2CBUS) {
 		struct rt_i2c_msg msgs[2];
@@ -52,7 +52,7 @@ static rt_err_t read_bits(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt
 	rt_uint8_t byte, mask;
 	rt_err_t res;
 
-	res = read_regs(dev, reg, 1, &byte);
+	res = read_regs(dev, reg, &byte, 1);
 	if (res != RT_EOK) {
 		return res;
 	}
@@ -63,6 +63,41 @@ static rt_err_t read_bits(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt
 	*data = byte;
 
 	return RT_EOK;
+}
+
+/**
+ * This function writes the value of registers for hmc5883l
+ *
+ * @param dev the pointer of device driver structure
+ * @param reg the register for hmc5883l
+ * @param buf read data pointer
+ * @param len number of register
+ *
+ * @return the writing status, RT_EOK represents reading the value of registers successfully.
+ */
+static rt_err_t write_regs(struct hmc5883l_device_struct *dev, rt_uint8_t reg, rt_uint8_t *buf, rt_uint8_t len)
+{
+	if (dev->bus->type == RT_Device_Class_I2CBUS) {
+		struct rt_i2c_msg msgs[2];
+
+		msgs[0].addr = dev->i2c_addr; /* Slave address */
+		msgs[0].flags = RT_I2C_WR | RT_I2C_NO_STOP; /* Write flag */
+		msgs[0].buf = &reg; /* Slave register address */
+		msgs[0].len = 1; /* Number of bytes sent */
+
+		msgs[1].addr = dev->i2c_addr; /* Slave address */
+		msgs[1].flags = RT_I2C_WR | RT_I2C_NO_START; /* Read flag */
+		msgs[1].buf = buf; /* Read data pointer */
+		msgs[1].len = len; /* Number of bytes read */
+
+		if (rt_i2c_transfer((struct rt_i2c_bus_device *)dev->bus, msgs, 2) == 2) {
+			return RT_EOK;
+		} else {
+			return -RT_ERROR;
+		}
+	} else {
+		return -RT_ERROR;
+	}
 }
 
 /**
@@ -114,7 +149,7 @@ static rt_err_t write_bits(struct hmc5883l_device_struct *dev, rt_uint8_t reg, r
 	rt_uint8_t byte, mask;
 	rt_err_t res;
 
-	res = read_regs(dev, reg, 1, &byte);
+	res = read_regs(dev, reg, &byte, 1);
 	if (res != RT_EOK) {
 		return res;
 	}
@@ -131,7 +166,7 @@ static rt_err_t write_bits(struct hmc5883l_device_struct *dev, rt_uint8_t reg, r
 rt_err_t self_test(struct hmc5883l_device_struct *dev)
 {
 	rt_uint8_t data[3] = { 0 };
-	read_regs(dev, 0x0A, 3, data);
+	read_regs(dev, 0x0A, data, 3);
 
 	if (data[0] == 0x48 && data[1] == 0x34 && data[2] == 0x33) {
 		return RT_EOK;
@@ -298,7 +333,7 @@ rt_err_t my_hmc5883l_get_data(struct hmc5883l_device_struct *hmc5883l, struct hm
 		}
 		// for debugging
 		// rt_uint8_t configs[3];
-		// if (read_regs(hmc5883l, 0x00, 3, configs) != RT_EOK) {
+		// if (read_regs(hmc5883l, 0x00, configs, 3) != RT_EOK) {
 		// 	return -RT_ERROR;
 		// }
 		// LOG_E("0x00: 0x%02X", configs[0]);
@@ -306,7 +341,7 @@ rt_err_t my_hmc5883l_get_data(struct hmc5883l_device_struct *hmc5883l, struct hm
 		// LOG_E("0x02: 0x%02X", configs[2]);
 
 		rt_uint8_t buffer[6];
-		if (read_regs(hmc5883l, 0x03, 6, buffer) != RT_EOK) {
+		if (read_regs(hmc5883l, 0x03, buffer, 6) != RT_EOK) {
 			return -RT_ERROR;
 		}
 		data->x = (rt_int16_t)(((buffer[0]) << 8) | buffer[1]);
