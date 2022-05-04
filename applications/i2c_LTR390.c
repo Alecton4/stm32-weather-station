@@ -221,7 +221,10 @@ rt_err_t my_ltr390_get_data(struct ltr390_device_struct *ltr390, struct ltr390_d
 				return -RT_ERROR;
 			}
 			rt_uint32_t uvsData = (rt_uint32_t)(buffer[2] << 16 | buffer[1] << 8 | buffer[0]);
-			data->uv = uvsData / 2300; // ??? calculate uvi
+			// REF: https://github.com/adafruit/Adafruit_CircuitPython_LTR390/blob/main/adafruit_ltr390.py
+			double sensitivity = 1400.00 / 18 * 3 / pow(2, (20 - 18));
+			LOG_E("sensitivity: %0.2f", sensitivity);
+			data->uv = uvsData / sensitivity;
 		}
 
 		return RT_EOK;

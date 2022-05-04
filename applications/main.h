@@ -11,6 +11,7 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include "stm32f1xx_hal.h"
+#include <math.h>
 // for outputing debugging info
 #define DBG_TAG "main"
 #define DBG_LVL DBG_LOG
