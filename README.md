@@ -5,9 +5,9 @@
 ## Demo Video
 
 ## Features
-- [ ] Temperature measurement using BME280 (I2C).
-- [ ] Humidity measurement using BME280 (I2C).
-- [ ] Barometric pressure measurement using BME280 (I2C).
+- [x] Temperature measurement using BME280 (I2C).
+- [x] Humidity measurement using BME280 (I2C).
+- [x] Barometric pressure measurement using BME280 (I2C).
 - [ ] UV measurement using LTR390-UV-01 (I2C).
 - [ ] Ambient light measurement using LTR390-UV-01 (I2C).
 - [ ] Ambient sound detection using LM386 (ADC).
