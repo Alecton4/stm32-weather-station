@@ -2,7 +2,7 @@
 
 static struct rt_i2c_bus_device *i2c_bus_toBeUsed;
 
-/*
+/**
  * Return control or wait,
  * for a period amount of milliseconds
  */
@@ -11,7 +11,7 @@ static void my_delay_ms(uint32_t milliseconds)
 	rt_thread_mdelay(milliseconds);
 }
 
-/*
+/**
  * int8_t user_i2c_read(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len)
  * The parameter dev_id can be used as a variable to store the I2C address of the device
  *
@@ -56,7 +56,7 @@ static rt_err_t read_regs(rt_uint8_t addr, rt_uint8_t reg, rt_uint8_t *data, rt_
 	}
 }
 
-/*
+/**
  * int8_t user_i2c_write(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len)
  * The parameter dev_id can be used as a variable to store the I2C address of the device
  *
