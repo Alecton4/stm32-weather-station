@@ -19,6 +19,7 @@
 #include "led_embedded.h"
 #include "key_embedded.h"
 #include "i2c_HMC5883L.h"
+#include "i2c_BME280.h"
 
 /* Exported types ------------------------------------------------------------*/
 
