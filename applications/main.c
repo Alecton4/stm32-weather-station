@@ -92,8 +92,8 @@ int main(void)
 		if ((ltr390_curr_milli - ltr390_prev_milli >= LTR390_DELAY) && (ltr390 != RT_NULL)) {
 			ltr390_prev_milli = ltr390_curr_milli;
 			if (my_ltr390_get_data(ltr390, &ltr390_rawData) == RT_EOK) {
-				LOG_D("al: %0.2f", ltr390_rawData.al);
-				LOG_D("uv: %d", ltr390_rawData.uv);
+				LOG_D("lux: %0.2f", ltr390_rawData.lux);
+				LOG_D("uvi: %d", ltr390_rawData.uvi);
 			} else {
 				LOG_E("LTR390 get data failed!");
 				my_ltr390_destroy(ltr390);

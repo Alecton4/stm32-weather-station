@@ -44,8 +44,8 @@
 #define LTR390_GAIN_18 0x04
 
 struct ltr390_data_struct {
-	double al;
-	rt_uint8_t uv;
+	double lux;
+	rt_uint8_t uvi;
 };
 
 struct ltr390_config_struct {
