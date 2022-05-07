@@ -1,7 +1,9 @@
 #ifndef MY_HMC5883L_H
 #define MY_HMC5883L_H
 
-#include "main.h"
+#include <board.h>
+#include <rtthread.h>
+#include <rtdevice.h>
 
 #define HMC5883L_I2C_BUS "i2c1"
 #define HMC5883L_ADDR 0x1E

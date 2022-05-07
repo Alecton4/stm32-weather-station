@@ -1,7 +1,9 @@
 #ifndef MY_LED_EMBEDDED_H
 #define MY_LED_EMBEDDED_H
 
-#include "main.h"
+#include <board.h>
+#include <rtthread.h>
+#include <rtdevice.h>
 
 #define LED_WHITE 0b111
 #define LED_RED 0b100

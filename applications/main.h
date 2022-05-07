@@ -10,7 +10,6 @@
 #include <board.h>
 #include <rtthread.h>
 #include <rtdevice.h>
-#include "stm32f1xx_hal.h"
 #include <math.h>
 // for outputing debugging info
 #define DBG_TAG "main"
@@ -22,6 +21,8 @@
 #include "i2c_HMC5883L.h"
 #include "i2c_BME280.h"
 #include "i2c_LTR390.h"
+
+#include "bsp_ili9341_lcd.h"
 
 /* Exported types ------------------------------------------------------------*/
 
