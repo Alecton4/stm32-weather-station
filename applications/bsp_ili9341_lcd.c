@@ -15,7 +15,6 @@
   */
 
 #include "bsp_ili9341_lcd.h"
-#include "fonts.h"
 
 static SRAM_HandleTypeDef SRAM_Handler;
 static FSMC_NORSRAM_TimingTypeDef Timing;
@@ -48,7 +47,6 @@ static void ILI9341_REG_Config(void);
 static void ILI9341_SetCursor(uint16_t usX, uint16_t usY);
 static __inline void ILI9341_FillColor(uint32_t ulAmout_Point, uint16_t usColor);
 static uint16_t ILI9341_Read_PixelData(void);
-static void Delay(__IO uint32_t nCount);
 
 /**
   * @brief  向ILI9341写入命令

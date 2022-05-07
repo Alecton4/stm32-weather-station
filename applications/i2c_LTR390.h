@@ -1,7 +1,10 @@
 #ifndef MY_LTR390_H
 #define MY_LTR390_H
 
-#include "main.h"
+#include <board.h>
+#include <rtthread.h>
+#include <rtdevice.h>
+#include <math.h>
 
 #define LTR390_I2C_BUS "i2c1"
 #define LTR390_ADDR 0x53

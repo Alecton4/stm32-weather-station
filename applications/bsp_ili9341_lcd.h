@@ -2,6 +2,7 @@
 #define __BSP_ILI9341_LCD_H
 
 #include <board.h>
+#include <stdio.h>
 #include "fonts.h"
 
 /***************************************************************************************

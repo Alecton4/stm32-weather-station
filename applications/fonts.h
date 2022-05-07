@@ -2,7 +2,6 @@
 #define __FONT_H
 
 #include <board.h>
-#include "fonts.h"
 
 #define LINE(x) ((x) * (((struct sFONT *)LCD_GetFont())->Height))
 #define LINEY(x) ((x) * (((struct sFONT *)LCD_GetFont())->Width))

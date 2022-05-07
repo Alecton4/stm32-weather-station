@@ -1,4 +1,8 @@
 #include "i2c_LTR390.h"
+// for outputing debugging info
+#define DBG_TAG "LTR390"
+#define DBG_LVL DBG_LOG
+#include <rtdbg.h>
 
 /**
  * This function reads the value of registers for ltr390

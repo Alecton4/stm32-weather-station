@@ -1,4 +1,8 @@
 #include "i2c_HMC5883L.h"
+// for outputing debugging info
+#define DBG_TAG "HMC5883L"
+#define DBG_LVL DBG_LOG
+#include <rtdbg.h>
 
 /**
  * This function reads the value of registers for hmc5883l

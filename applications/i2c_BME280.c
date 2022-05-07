@@ -1,4 +1,8 @@
 #include "i2c_BME280.h"
+// for outputing debugging info
+#define DBG_TAG "BME280"
+#define DBG_LVL DBG_LOG
+#include <rtdbg.h>
 
 static struct rt_i2c_bus_device *i2c_bus_toBeUsed;
 
