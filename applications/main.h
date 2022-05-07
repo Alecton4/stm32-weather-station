@@ -18,6 +18,7 @@
 #include "i2c_LTR390.h"
 
 #include "bsp_ili9341_lcd.h"
+#include "bsp_xpt2046_lcd.h"
 
 /* Exported types ------------------------------------------------------------*/
 
