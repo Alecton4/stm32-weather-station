@@ -35,6 +35,18 @@ const rt_tick_t LTR390_DELAY = 1000;
 struct ltr390_device_struct *ltr390 = RT_NULL;
 struct ltr390_data_struct ltr390_rawData;
 
+rt_tick_t gp2y1014au0f_prev_milli = 0;
+rt_tick_t gp2y1014au0f_curr_milli = 0;
+const rt_tick_t GP2Y1014AU0F_DELAY = 1000;
+// struct gp2y1014au0f_device_struct *gp2y1014au0f = RT_NULL; // !!! don't use
+double gp2y1014au0f_rawData;
+
+rt_tick_t lm386_prev_milli = 0;
+rt_tick_t lm386_curr_milli = 0;
+const rt_tick_t LM386_DELAY = 100;
+// struct lm386_device_struct *lm386 = RT_NULL; // !!! don't use
+double lm386_rawData;
+
 // extern uint8_t Ov7725_vsync;
 // extern OV7725_MODE_PARAM cam_mode;
 
@@ -43,6 +55,8 @@ void my_key_and_led_test(void);
 void my_hmc5883l_test(void);
 void my_bme280_test(void);
 void my_ltr390_test(void);
+void my_gp2y1014au0f_test(void);
+void my_lm386_test(void);
 
 // -------- HAL VARIABLES --------
 
@@ -59,6 +73,9 @@ int main(void)
 	// hmc5883l = my_hmc5883l_init(HMC5883L_I2C_BUS, HMC5883L_ADDR);
 	// bme280 = my_bme280_init(BME280_I2C_BUS, BME280_ADDR);
 	// ltr390 = my_ltr390_init(LTR390_I2C_BUS, LTR390_ADDR);
+	// my_gp2y1014au0f_init();
+	// lm386 = my_lm386_init(LM386_ADC_DEV_NAME, LM386_ADC_DEV_CHANNEL); // !!! don't use
+	// my_lm386_init();
 	// ILI9341_Init();
 	// XPT2046_Init();
 	// ILI9341_GramScan(3);
@@ -70,6 +87,8 @@ int main(void)
 		// my_hmc5883l_test();
 		// my_bme280_test();
 		// my_ltr390_test();
+		// my_gp2y1014au0f_test();
+		// my_lm386_test();
 		// LCD_Test();
 		// LCD_Direction_Show();
 		// XPT2046_TouchEvenHandler();
@@ -137,5 +156,35 @@ void my_ltr390_test(void)
 			LOG_E("LTR390 get data failed!");
 			my_ltr390_destroy(ltr390);
 		}
+	}
+};
+
+void my_gp2y1014au0f_test(void)
+{
+	gp2y1014au0f_curr_milli = rt_tick_get_millisecond();
+	if ((gp2y1014au0f_curr_milli - gp2y1014au0f_prev_milli >= GP2Y1014AU0F_DELAY)) {
+		gp2y1014au0f_prev_milli = gp2y1014au0f_curr_milli;
+		// if (my_gp2y1014au0f_get_data(gp2y1014au0f, &gp2y1014au0f_rawData) == RT_EOK) {
+		// 	LOG_D("lux: %d", gp2y1014au0f_rawData);
+		// } else {
+		// 	LOG_E("GP2Y1014AU0F get data failed!");
+		// 	my_gp2y1014au0f_destroy(gp2y1014au0f);
+		// }
+		gp2y1014au0f_rawData = my_gp2y1014au0f_get_data();
+	}
+};
+
+void my_lm386_test(void)
+{
+	lm386_curr_milli = rt_tick_get_millisecond();
+	if ((lm386_curr_milli - lm386_prev_milli >= LM386_DELAY)) {
+		lm386_prev_milli = lm386_curr_milli;
+		// if (my_lm386_get_data(lm386, &lm386_rawData) == RT_EOK) {
+		// 	LOG_D("lux: %d", lm386_rawData);
+		// } else {
+		// 	LOG_E("LM386 get data failed!");
+		// 	my_lm386_destroy(lm386);
+		// }
+		lm386_rawData = my_lm386_get_data();
 	}
 };

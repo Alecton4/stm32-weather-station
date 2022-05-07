@@ -16,6 +16,8 @@
 #include "i2c_HMC5883L.h"
 #include "i2c_BME280.h"
 #include "i2c_LTR390.h"
+#include "adc_GP2Y1014AU0F.h"
+#include "adc_LM386.h"
 
 #include "bsp_ili9341_lcd.h"
 #include "bsp_xpt2046_lcd.h"
