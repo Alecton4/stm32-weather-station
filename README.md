@@ -1,4 +1,4 @@
-# IoT-Smart-Weather-Station
+# IoT-Smart-Animal-Tracker
 
 ## Overall View
 
@@ -8,10 +8,11 @@
 - [x] Temperature measurement using BME280 (I2C).
 - [x] Humidity measurement using BME280 (I2C).
 - [x] Barometric pressure measurement using BME280 (I2C).
+- [x] Compass functionality using HMC5883L (I2C).
 - [x] UV measurement using LTR390-UV-01 (I2C).
 - [x] Ambient light measurement using LTR390-UV-01 (I2C).
-- [ ] Ambient sound detection using LM386 (ADC).
-- [ ] PM2.5 measurement using GP2Y1014AU0F (ADC).
+- [x] Ambient sound detection using LM386 (ADC).
+- [x] PM2.5 measurement using GP2Y1014AU0F (ADC).
 - [ ] Environment measurement data can be displayed on LCD and stored in SD card for further analysis (FSMC, SDIO).
 - [ ] GUI and touch control (FSMC, SPI).
 - [ ] LCD auto-adjusts brightness according to ambient light (I2C, PWM).
@@ -20,7 +21,7 @@
 - [ ] Real time clock is enabled, and the board can synchronize time with cloud server through Internet (RTC, SNTP).
 - [ ] Internet-of-Things. The board can communicate with cloud server through Internet via TCP protocol. It can send data to the server and receive command from the server (UART, TCP, AT Commands).
 - [ ] Hot-swapping pins. There are some pins used by both camera ov7725 and ESP8266. The system can configure the correct states for the pin for each component during run time (UART, GPIO).
-- [ ] RTOS integration.
+- [x] RTOS integration.
 - [ ] System crash detection and auto reboot (IWDG).
 
 ## CubeMX Config
