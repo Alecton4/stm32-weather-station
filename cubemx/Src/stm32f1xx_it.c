@@ -58,7 +58,7 @@
 extern TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN EV */
-
+extern uint8_t Ov7725_vsync;
 /* USER CODE END EV */
 
 /******************************************************************************/

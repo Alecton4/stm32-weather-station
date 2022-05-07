@@ -1,10 +1,16 @@
 #include "i2c_BME280.h"
+// for outputing debugging info
+#define DBG_TAG "BME280"
+#define DBG_LVL DBG_LOG
+#include <rtdbg.h>
 
 static struct rt_i2c_bus_device *i2c_bus_toBeUsed;
 
 /**
  * Return control or wait,
  * for a period amount of milliseconds
+ *
+ * @param milliseconds time to delay
  */
 static void my_delay_ms(uint32_t milliseconds)
 {
@@ -99,6 +105,14 @@ static rt_err_t write_regs(rt_uint8_t addr, rt_uint8_t reg, rt_uint8_t *data, rt
 	}
 }
 
+/**
+ * This function initialize the bme280 device.
+ *
+ * @param i2c_bus_name the name of transfer device
+ * @param addr the i2c device address for i2c communication
+ *
+ * @return the pointer of device driver structure, RT_NULL represents initialization failed.
+ */
 struct bme280_device_struct *my_bme280_init(const char *i2c_bus_name, rt_uint8_t addr)
 {
 	struct bme280_device_struct *bme280 = RT_NULL;
@@ -176,6 +190,14 @@ void my_bme280_destroy(struct bme280_device_struct *bme280)
 	rt_free(bme280);
 }
 
+/**
+ * This function gets the raw data of the mag
+ *
+ * @param bme280 the pointer of device driver structure
+ * @param data the pointer of received data
+ *
+ * @return the reading status, RT_EOK represents reading the data successfully.
+ */
 rt_err_t my_bme280_get_data(struct bme280_device_struct *bme280, struct bme280_data *data)
 {
 	if (bme280 == RT_NULL || data == RT_NULL) {

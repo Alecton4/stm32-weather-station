@@ -1,4 +1,8 @@
 #include "i2c_LTR390.h"
+// for outputing debugging info
+#define DBG_TAG "LTR390"
+#define DBG_LVL DBG_LOG
+#include <rtdbg.h>
 
 /**
  * This function reads the value of registers for ltr390
@@ -108,7 +112,7 @@ static rt_err_t write_reg(struct ltr390_device_struct *dev, rt_uint8_t reg, rt_u
  * @param i2c_bus_name the name of transfer device
  * @param addr the i2c device address for i2c communication
  *
- * @return the pointer of device driver structure, RT_NULL reprensents  initialization failed.
+ * @return the pointer of device driver structure, RT_NULL represents initialization failed.
  */
 struct ltr390_device_struct *my_ltr390_init(const char *i2c_bus_name, rt_uint8_t addr)
 {
@@ -135,14 +139,8 @@ struct ltr390_device_struct *my_ltr390_init(const char *i2c_bus_name, rt_uint8_t
 		return RT_NULL;
 	}
 
-	// if (self_test(ltr390) != RT_EOK) {
-	// 	LOG_E("ltr390 test self fail!");
-	// 	rt_free(ltr390);
-	// 	return RT_NULL;
-	// }
-
-	// set parameters
-	if ((write_reg(ltr390, LTR390_REGISTER_MEAS_RATE, LTR390_RESOLUTION_18BIT_TIME100MS | LTR390_RATE_100MS) != RT_EOK) ||
+	// sensor configuration
+	if ((write_reg(ltr390, LTR390_REGISTER_MEAS_RATE, LTR390_RESOLUTION_16BIT_TIME25MS | LTR390_RATE_25MS) != RT_EOK) ||
 	    (write_reg(ltr390, LTR390_REGISTER_GAIN, LTR390_GAIN_3) != RT_EOK)) {
 		LOG_E("ltr390 cannot be configured!");
 		rt_free(ltr390);
@@ -168,7 +166,7 @@ void my_ltr390_destroy(struct ltr390_device_struct *ltr390)
  * This function gets the raw data of the mag
  *
  * @param ltr390 the pointer of device driver structure
- * @param data the pointer of 3axes structure for receive data
+ * @param data the pointer of received data
  *
  * @return the reading status, RT_EOK represents reading the data successfully.
  */
@@ -186,7 +184,8 @@ rt_err_t my_ltr390_get_data(struct ltr390_device_struct *ltr390, struct ltr390_d
 			LOG_E("ltr390 cannot be configured!");
 			return -RT_ERROR;
 		}
-		rt_thread_mdelay(200);
+		// !!! remember to change parameters if sensor configuration is changed
+		rt_thread_mdelay(25);
 		status = 0x00;
 		if (read_regs(ltr390, LTR390_REGISTER_MAIN_STATUS, &status, 1) != RT_EOK) {
 			LOG_E("ltr390 cannot be read!");
@@ -199,7 +198,8 @@ rt_err_t my_ltr390_get_data(struct ltr390_device_struct *ltr390, struct ltr390_d
 				return -RT_ERROR;
 			}
 			rt_uint32_t alsData = (rt_uint32_t)(buffer[2] << 16 | buffer[1] << 8 | buffer[0]);
-			data->al = (0.6 * alsData) / (3 * 1); // calculate lux
+			// !!! remember to change parameters if sensor configuration is changed
+			data->lux = (0.6 * alsData) / (3 * 0.25);
 		}
 
 		// measure uv
@@ -208,7 +208,8 @@ rt_err_t my_ltr390_get_data(struct ltr390_device_struct *ltr390, struct ltr390_d
 			LOG_E("ltr390 cannot be configured!");
 			return -RT_ERROR;
 		}
-		rt_thread_mdelay(200);
+		// !!! remember to change parameters if sensor configuration is changed
+		rt_thread_mdelay(25);
 		status = 0x00;
 		if (read_regs(ltr390, LTR390_REGISTER_MAIN_STATUS, &status, 1) != RT_EOK) {
 			LOG_E("ltr390 cannot be read!");
@@ -221,7 +222,10 @@ rt_err_t my_ltr390_get_data(struct ltr390_device_struct *ltr390, struct ltr390_d
 				return -RT_ERROR;
 			}
 			rt_uint32_t uvsData = (rt_uint32_t)(buffer[2] << 16 | buffer[1] << 8 | buffer[0]);
-			data->uv = uvsData / 2300; // ??? calculate uvi
+			// REF https://github.com/adafruit/Adafruit_CircuitPython_LTR390/blob/main/adafruit_ltr390.py
+			// !!! remember to change parameters if sensor configuration is changed
+			double sensitivity = 1400.00 / 18 * 3 / pow(2, (20 - 16));
+			data->uvi = uvsData / sensitivity;
 		}
 
 		return RT_EOK;

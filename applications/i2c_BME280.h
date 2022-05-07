@@ -1,7 +1,9 @@
 #ifndef MY_BME280_H
 #define MY_BME280_H
 
-#include "main.h"
+#include <board.h>
+#include <rtthread.h>
+#include <rtdevice.h>
 #include "Bosch_BME280.h"
 #include "Bosch_BME280_selftest.h"
 

@@ -53,6 +53,7 @@ extern "C" {
 #define LED_EMBEDDED_B GET_PIN(B, 1)
 #define KEY1 GET_PIN(A, 0)
 #define KEY2 GET_PIN(C, 13)
+#define GP2Y1014AU0F_ILED_PIN GET_PIN(A, 7)
 
 /*-------------------------- GPIO CONFIG END --------------------------*/
 
