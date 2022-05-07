@@ -20,6 +20,8 @@
 #include "bsp_ili9341_lcd.h"
 #include "bsp_xpt2046_lcd.h"
 
+#include "bsp_ov7725.h"
+
 /* Exported types ------------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
