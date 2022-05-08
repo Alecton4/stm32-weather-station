@@ -2,7 +2,7 @@
 #define _PALETTE_H
 
 #include "board.h"
-#include "bsp_ili9341_lcd.h"
+#include "bsp_lcd_ili9341.h"
 
 #define COLOR_BLOCK_WIDTH 40
 #define COLOR_BLOCK_HEIGHT 28

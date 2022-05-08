@@ -15,8 +15,8 @@
   */
 
 #include "bsp_ov7725.h"
-#include "bsp_sccb.h"
-#include "bsp_ili9341_lcd.h"
+#include "bsp_ov7725_sccb.h"
+#include "bsp_lcd_ili9341.h"
 #include "key_embedded.h"
 #include "led_embedded.h"
 

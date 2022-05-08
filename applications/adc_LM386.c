@@ -87,7 +87,7 @@ static void my_MX_ADC1_Init(void)
 	}
 	/** Configure Regular Channel
   */
-	sConfig.Channel = ADC_CHANNEL_5;
+	sConfig.Channel = ADC_CHANNEL_6;
 	sConfig.Rank = ADC_REGULAR_RANK_1;
 	sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
 	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
@@ -114,10 +114,9 @@ double my_lm386_get_data()
 
 	value = HAL_ADC_GetValue(&hadc1);
 	LOG_D("the value is: %d", value);
-	voltage = value * 3.3 / 4096;
+	voltage = value / 4096.0 * 3.3;
 	LOG_D("the voltage is: %0.2f", voltage);
 
 	HAL_ADC_Stop(&hadc1);
-
 	return voltage;
 }

@@ -14,7 +14,7 @@
   ******************************************************************************
   */
 
-#include "bsp_ili9341_lcd.h"
+#include "bsp_lcd_ili9341.h"
 
 static SRAM_HandleTypeDef SRAM_Handler;
 static FSMC_NORSRAM_TimingTypeDef Timing;

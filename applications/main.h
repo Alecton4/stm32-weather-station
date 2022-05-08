@@ -19,8 +19,8 @@
 #include "adc_GP2Y1014AU0F.h"
 #include "adc_LM386.h"
 
-#include "bsp_ili9341_lcd.h"
-#include "bsp_xpt2046_lcd.h"
+#include "bsp_lcd_ili9341.h"
+#include "bsp_lcd_xpt2046.h"
 
 #include "bsp_ov7725.h"
 

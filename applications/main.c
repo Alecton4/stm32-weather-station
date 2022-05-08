@@ -43,7 +43,7 @@ double gp2y1014au0f_rawData;
 
 rt_tick_t lm386_prev_milli = 0;
 rt_tick_t lm386_curr_milli = 0;
-const rt_tick_t LM386_DELAY = 1000;
+const rt_tick_t LM386_DELAY = 10;
 // struct lm386_device_struct *lm386 = RT_NULL; // !!! don't use
 double lm386_rawData;
 
