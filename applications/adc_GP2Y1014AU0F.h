@@ -10,9 +10,9 @@
 #define GP2Y1014AU0F_REFER_VOLTAGE 330 /* 参考电压 3.3V,数据精度乘以100保留2位小数*/
 #define GP2Y1014AU0F_CONVERT_BITS (1 << 12) /* 转换位数为12位 */
 
-#define COV_RATIO 0.2 //ug/mmm / mv
-#define NO_DUST_VOLTAGE 400 //mv
-#define SYS_VOLTAGE 3300
+#define COV_RATIO (100 / 0.5) //ug/m^3 / mv
+#define VOLTAGE_NO_DUST 0.1
+#define VOLTAGE_SYS 3.3
 
 // struct gp2y1014au0f_device_struct {
 // 	rt_adc_device_t adc;
@@ -25,5 +25,6 @@
 
 void my_gp2y1014au0f_init(void);
 double my_gp2y1014au0f_get_data();
+double my_gp2y1014au0f_get_data_avg(rt_uint32_t sample_num);
 
 #endif

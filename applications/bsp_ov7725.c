@@ -785,14 +785,9 @@ void my_ov7725_test(void)
 		ImagDisp(cam_mode.lcd_sx, cam_mode.lcd_sy, cam_mode.cam_width, cam_mode.cam_height); /*采集并显示*/
 
 		Ov7725_vsync = 0;
-		led_embedded_color(LED_RED);
-	}
-
-	/*检测按键*/
-	if (key1_isPressed()) {
-		/*LED反转*/
 		led_embedded_color(LED_GREEN);
 	}
+
 	/*检测按键*/
 	if (key2_isPressed()) {
 		/*LED反转*/

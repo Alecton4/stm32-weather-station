@@ -43,7 +43,7 @@ double gp2y1014au0f_rawData;
 
 rt_tick_t lm386_prev_milli = 0;
 rt_tick_t lm386_curr_milli = 0;
-const rt_tick_t LM386_DELAY = 100;
+const rt_tick_t LM386_DELAY = 1000;
 // struct lm386_device_struct *lm386 = RT_NULL; // !!! don't use
 double lm386_rawData;
 
@@ -68,31 +68,31 @@ int main(void)
 {
 	int count = 1;
 
-	// led_embedded_init();
-	// key_embedded_init();
-	// hmc5883l = my_hmc5883l_init(HMC5883L_I2C_BUS, HMC5883L_ADDR);
-	// bme280 = my_bme280_init(BME280_I2C_BUS, BME280_ADDR);
-	// ltr390 = my_ltr390_init(LTR390_I2C_BUS, LTR390_ADDR);
-	// my_gp2y1014au0f_init();
+	led_embedded_init();
+	key_embedded_init();
+	hmc5883l = my_hmc5883l_init(HMC5883L_I2C_BUS, HMC5883L_ADDR);
+	bme280 = my_bme280_init(BME280_I2C_BUS, BME280_ADDR);
+	ltr390 = my_ltr390_init(LTR390_I2C_BUS, LTR390_ADDR);
+	my_gp2y1014au0f_init();
 	// lm386 = my_lm386_init(LM386_ADC_DEV_NAME, LM386_ADC_DEV_CHANNEL); // !!! don't use
-	// my_lm386_init();
-	// ILI9341_Init();
-	// XPT2046_Init();
-	// ILI9341_GramScan(3);
+	my_lm386_init();
+	ILI9341_Init();
+	XPT2046_Init();
+	ILI9341_GramScan(3);
 	// Palette_Init(LCD_SCAN_MODE); // 绘制触摸画板界面
-	// my_ov7725_test_init();
+	my_ov7725_test_init();
 
 	while (count++) {
 		// my_key_and_led_test();
-		// my_hmc5883l_test();
-		// my_bme280_test();
-		// my_ltr390_test();
-		// my_gp2y1014au0f_test();
-		// my_lm386_test();
+		my_hmc5883l_test();
+		my_bme280_test();
+		my_ltr390_test();
+		my_gp2y1014au0f_test();
+		my_lm386_test();
 		// LCD_Test();
 		// LCD_Direction_Show();
 		// XPT2046_TouchEvenHandler();
-		// my_ov7725_test();
+		my_ov7725_test();
 	}
 
 	return RT_EOK;

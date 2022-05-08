@@ -52,28 +52,31 @@ void my_gp2y1014au0f_init(void)
 	my_MX_ADC1_Init();
 	// HAL_ADC_Start_IT(&hadc1);
 	rt_pin_mode(GP2Y1014AU0F_ILED_PIN, PIN_MODE_OUTPUT);
+	rt_pin_write(GP2Y1014AU0F_ILED_PIN, PIN_LOW);
 }
 
-static rt_int32_t my_filter(rt_int32_t m)
+static rt_uint32_t my_filter(rt_uint32_t data)
 {
-	static int flag_first = 0, _buff[10], sum;
-	const int _buff_max = 10;
-	int i;
+	static rt_uint32_t flag_first = 0;
+	static rt_uint32_t buffer[10];
+	static rt_uint32_t sum = 0;
+	const rt_uint8_t BUFFER_LENGTH = 10;
+	rt_uint8_t i;
 
 	if (flag_first == 0) {
 		flag_first = 1;
-		for (i = 0, sum = 0; i < _buff_max; i++) {
-			_buff[i] = m;
-			sum += _buff[i];
+		for (i = 0, sum = 0; i < BUFFER_LENGTH; i++) {
+			buffer[i] = data;
+			sum += buffer[i];
 		}
-		return m;
+		return data;
 	} else {
-		sum -= _buff[0];
-		for (i = 0; i < (_buff_max - 1); i++) {
-			_buff[i] = _buff[i + 1];
+		sum -= buffer[0];
+		for (i = 0; i < (BUFFER_LENGTH - 1); i++) {
+			buffer[i] = buffer[i + 1];
 		}
-		_buff[9] = m;
-		sum += _buff[9];
+		buffer[9] = data;
+		sum += buffer[9];
 
 		i = sum / 10.0;
 		return i;
@@ -87,23 +90,37 @@ double my_gp2y1014au0f_get_data()
 	double density;
 
 	rt_pin_write(GP2Y1014AU0F_ILED_PIN, PIN_HIGH);
-	rt_thread_mdelay(2);
+	rt_hw_us_delay(300); // 传感器内部红外二极管在开启之后0.28ms，输出波形才达到稳定
+
 	HAL_ADC_Start(&hadc1);
 	HAL_ADC_PollForConversion(&hadc1, 100);
 	value = HAL_ADC_GetValue(&hadc1);
+
+	// rt_hw_us_delay(40); //整个脉冲持续时间为320μs。因此，我们还需再等待40μs
 	rt_pin_write(GP2Y1014AU0F_ILED_PIN, PIN_LOW);
+	// rt_hw_us_delay(9680); //需要脉宽比0.32ms/10ms的PWM信号驱动传感器中的LED
+
 	value = my_filter(value);
 	LOG_D("the value is: %d", value);
-	voltage = (SYS_VOLTAGE / 4096.0) * value * 11;
+	voltage = (value / 4096.0) * VOLTAGE_SYS * 11;
 	LOG_D("the voltage is: %f", voltage);
-	if (voltage >= NO_DUST_VOLTAGE) {
-		voltage -= NO_DUST_VOLTAGE;
-
+	if (voltage >= VOLTAGE_NO_DUST) {
+		voltage -= VOLTAGE_NO_DUST;
 		density = voltage * COV_RATIO;
-	} else
+	} else {
 		density = 0;
+	}
 	LOG_D("The current dust concentration is: %4.2fug/m3", density);
 
 	HAL_ADC_Stop(&hadc1);
 	return density;
+}
+
+double my_gp2y1014au0f_get_data_avg(rt_uint32_t sample_num)
+{
+	double avg_density = 0;
+	for (rt_uint32_t i = 0; i < sample_num; i++) {
+		avg_density += my_gp2y1014au0f_get_data();
+	}
+	return avg_density / sample_num;
 }
