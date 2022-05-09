@@ -34,11 +34,15 @@
 
 ## Dependencies
 - [RT-Thread (RTOS) v4.0.5](https://github.com/RT-Thread/rt-thread)
+  - DFS
+  - FATFS
   - ULog
+  - Posix
   - Libc
   - Serial
   - Pin
   - Soft I2C
+  - SDIO
 <!-- - [Bosch Sensortec BME280 sensor driver v3.3.4](https://github.com/BoschSensortec/BME280_driver) -->
 - [LVGL (GUI library)](https://github.com/lvgl/lvgl)
 
