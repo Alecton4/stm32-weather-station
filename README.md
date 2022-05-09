@@ -1,6 +1,7 @@
 # IoT-Smart-Animal-Tracker
 
 ## Overall View
+<img src="img/OverallView.jpg" width="1024">
 
 ## Demo Video
 
@@ -13,10 +14,14 @@
 - [x] Ambient light measurement using LTR390-UV-01 (I2C).
 - [x] Ambient sound detection using LM386 (ADC).
 - [x] PM2.5 measurement using GP2Y1014AU0F (ADC).
-- [ ] Environment measurement data can be displayed on LCD and stored in SD card for further analysis (FSMC, SDIO).
-- [ ] GUI and touch control (FSMC, SPI).
+- [x] Embedded LED to display deivce status (GPIO).
+- [ ] Environment measurement data can be displayed on LCD (FSMC).
+- [ ] Environment measurement data can be stored in SD card for further analysis (SDIO).
+- [ ] Photo taking (SCCB).
+- [ ] Photos can be displayed on LCD (FSMC).
+- [ ] Photos can be stored in SD card (SDIO).
 - [ ] LCD auto-adjusts brightness according to ambient light (I2C, PWM).
-- [ ] Camera streaming and photo taking. Photos can be displayed on LCD and stored in SD card (SCCB, SDIO).
+- [ ] GUI and touch control (FSMC, SPI).
 - [ ] ESP8266 Wi-Fi connection (UART, AT Commands).
 - [ ] Real time clock is enabled, and the board can synchronize time with cloud server through Internet (RTC, SNTP).
 - [ ] Internet-of-Things. The board can communicate with cloud server through Internet via TCP protocol. It can send data to the server and receive command from the server (UART, TCP, AT Commands).
@@ -29,7 +34,12 @@
 
 ## Dependencies
 - [RT-Thread (RTOS) v4.0.5](https://github.com/RT-Thread/rt-thread)
-- [Bosch Sensortec BME280 sensor driver v3.3.4](https://github.com/BoschSensortec/BME280_driver)
+  - ULog
+  - Libc
+  - Serial
+  - Pin
+  - Soft I2C
+<!-- - [Bosch Sensortec BME280 sensor driver v3.3.4](https://github.com/BoschSensortec/BME280_driver) -->
 - [LVGL (GUI library)](https://github.com/lvgl/lvgl)
 
 ## How to build
