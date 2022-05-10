@@ -14,12 +14,10 @@
 - [x] Ambient light measurement using LTR390-UV-01 (I2C).
 - [x] Ambient sound detection using LM386 (ADC).
 - [x] PM2.5 measurement using GP2Y1014AU0F (ADC).
-- [x] Embedded LED to display deivce status (GPIO).
-- [ ] Environment measurement data can be displayed on LCD (FSMC).
-- [ ] Environment measurement data can be stored in SD card for further analysis (SDIO).
-- [ ] Photo taking (SCCB).
-- [ ] Photos can be displayed on LCD (FSMC).
-- [ ] Photos can be stored in SD card (SDIO).
+- [x] Embedded LED to display device status (GPIO).
+- [x] Photo taking (SCCB).
+- [ ] Environment measurement data and photos can be displayed on LCD (FSMC).
+- [ ] Environment measurement data and photos can be stored in SD card (SDIO, DFS).
 - [ ] LCD auto-adjusts brightness according to ambient light (I2C, PWM).
 - [ ] GUI and touch control (FSMC, SPI).
 - [ ] ESP8266 Wi-Fi connection (UART, AT Commands).
