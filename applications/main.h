@@ -18,11 +18,10 @@
 #include "i2c_LTR390.h"
 #include "adc_GP2Y1014AU0F.h"
 #include "adc_LM386.h"
-
 #include "bsp_lcd_ili9341.h"
 #include "bsp_lcd_xpt2046.h"
-
 #include "bsp_ov7725.h"
+#include "SD_card.h"
 
 /* Exported types ------------------------------------------------------------*/
 

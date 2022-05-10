@@ -284,7 +284,7 @@ void OV7725_Special_Effect(uint8_t eff);
 void VSYNC_Init(void);
 void OV7725_Window_Set(uint16_t sx, uint16_t sy, uint16_t width, uint16_t height, uint8_t QVGA_VGA);
 
-void my_ov7725_test_init(void);
+rt_err_t my_ov7725_test_init(void);
 void my_ov7725_test(void);
 
 #endif

@@ -293,9 +293,9 @@ static void VSYNC_GPIO_Config(void)
 	// HAL_NVIC_EnableIRQ(OV7725_VSYNC_EXTI_IRQ);
 
 	/* 按键0引脚为输入模式 */
-	rt_pin_mode(OV7725_VSYNC_PIN, PIN_MODE_INPUT_PULLUP);
-	/* 绑定中断，下降沿模式，回调函数名为beep_on */
-	rt_pin_attach_irq(OV7725_VSYNC_PIN, PIN_IRQ_MODE_FALLING, my_ov7725_interrupt, RT_NULL);
+	rt_pin_mode(OV7725_VSYNC_PIN, PIN_MODE_INPUT);
+	/* 绑定中断，下降沿模式 */
+	rt_pin_attach_irq(OV7725_VSYNC_PIN, PIN_IRQ_MODE_RISING, my_ov7725_interrupt, RT_NULL);
 	/* 使能中断 */
 	rt_pin_irq_enable(OV7725_VSYNC_PIN, PIN_IRQ_ENABLE);
 }
@@ -736,24 +736,16 @@ void ImagDisp(uint16_t sx, uint16_t sy, uint16_t width, uint16_t height)
 	}
 }
 
-void my_ov7725_test_init(void)
+rt_err_t my_ov7725_test_init(void)
 {
 	uint8_t retry = 0;
-	LCD_SetFont(&Font8x16);
-	LCD_SetColors(RED, BLACK);
-	ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH); /* 清屏，显示全黑 */
-	/********显示字符串示例*******/
-	ILI9341_DispStringLine_EN(LINE(0), "BH OV7725 Test Demo");
 	/* ov7725 gpio 初始化 */
 	OV7725_GPIO_Config();
-	led_embedded_color(LED_BLUE);
 	/* ov7725 寄存器默认配置初始化 */
 	while (OV7725_Init() != SUCCESS) {
 		retry++;
 		if (retry > 5) {
-			ILI9341_DispStringLine_EN(LINE(2), "No OV7725 module detected!");
-			while (1)
-				;
+			return -RT_ERROR;
 		}
 	}
 	/*根据摄像头参数组配置模式*/
@@ -770,11 +762,9 @@ void my_ov7725_test_init(void)
 	OV7725_Special_Effect(cam_mode.effect);
 	/*设置图像采样及模式大小*/
 	OV7725_Window_Set(cam_mode.cam_sx, cam_mode.cam_sy, cam_mode.cam_width, cam_mode.cam_height, cam_mode.QVGA_VGA);
-	/* 设置液晶扫描模式 */
-	ILI9341_GramScan(cam_mode.lcd_scan);
-	ILI9341_DispStringLine_EN(LINE(2), "OV7725 initialize success!");
 
 	Ov7725_vsync = 0;
+	return RT_EOK;
 }
 
 void my_ov7725_test(void)
