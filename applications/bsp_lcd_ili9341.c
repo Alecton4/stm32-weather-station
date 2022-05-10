@@ -14,7 +14,7 @@
   ******************************************************************************
   */
 
-#include "bsp_ili9341_lcd.h"
+#include "bsp_lcd_ili9341.h"
 
 static SRAM_HandleTypeDef SRAM_Handler;
 static FSMC_NORSRAM_TimingTypeDef Timing;
@@ -1274,7 +1274,8 @@ void LCD_Direction_Show(void)
 		ILI9341_GramScan(i);
 
 		sprintf(dispBuff, "o%d. X --->", i);
-		ILI9341_DispStringLine_EN(LINE(0), dispBuff); //沿X方向显示文字
+		// ILI9341_DispStringLine_EN(LINE(0), dispBuff); //沿X方向显示文字
+		ILI9341_DispString_EN(0, 0, dispBuff); //沿X方向显示文字
 
 		sprintf(dispBuff, "o%d.Y|V", i);
 		ILI9341_DispString_EN_YDir(0, 0, dispBuff); //沿Y方向显示文字

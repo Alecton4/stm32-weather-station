@@ -340,9 +340,9 @@ rt_err_t my_hmc5883l_get_data(struct hmc5883l_device_struct *hmc5883l, struct hm
 		// if (read_regs(hmc5883l, 0x00, configs, 3) != RT_EOK) {
 		// 	return -RT_ERROR;
 		// }
-		// LOG_E("0x00: 0x%02X", configs[0]);
-		// LOG_E("0x01: 0x%02X", configs[1]);
-		// LOG_E("0x02: 0x%02X", configs[2]);
+		// LOG_D("0x00: 0x%02X", configs[0]);
+		// LOG_D("0x01: 0x%02X", configs[1]);
+		// LOG_D("0x02: 0x%02X", configs[2]);
 
 		rt_uint8_t buffer[6];
 		if (read_regs(hmc5883l, 0x03, buffer, 6) != RT_EOK) {
@@ -352,12 +352,12 @@ rt_err_t my_hmc5883l_get_data(struct hmc5883l_device_struct *hmc5883l, struct hm
 		data->y = (rt_int16_t)(((buffer[4]) << 8) | buffer[5]);
 		data->z = (rt_int16_t)(((buffer[2]) << 8) | buffer[3]);
 		// for debugging
-		// LOG_E("0x03: 0x%02X", buffer[0]);
-		// LOG_E("0x04: 0x%02X", buffer[1]);
-		// LOG_E("0x05: 0x%02X", buffer[2]);
-		// LOG_E("0x06: 0x%02X", buffer[3]);
-		// LOG_E("0x07: 0x%02X", buffer[4]);
-		// LOG_E("0x08: 0x%02X", buffer[5]);
+		// LOG_D("0x03: 0x%02X", buffer[0]);
+		// LOG_D("0x04: 0x%02X", buffer[1]);
+		// LOG_D("0x05: 0x%02X", buffer[2]);
+		// LOG_D("0x06: 0x%02X", buffer[3]);
+		// LOG_D("0x07: 0x%02X", buffer[4]);
+		// LOG_D("0x08: 0x%02X", buffer[5]);
 		// LOG_D("x: %d", (rt_int16_t)(((buffer[0]) << 8) | buffer[1]));
 		// LOG_D("y: %d", (rt_int16_t)(((buffer[4]) << 8) | buffer[5]));
 		// LOG_D("z: %d", (rt_int16_t)(((buffer[2]) << 8) | buffer[3]));

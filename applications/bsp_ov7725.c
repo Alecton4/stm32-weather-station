@@ -15,8 +15,8 @@
   */
 
 #include "bsp_ov7725.h"
-#include "bsp_sccb.h"
-#include "bsp_ili9341_lcd.h"
+#include "bsp_ov7725_sccb.h"
+#include "bsp_lcd_ili9341.h"
 #include "key_embedded.h"
 #include "led_embedded.h"
 
@@ -293,9 +293,9 @@ static void VSYNC_GPIO_Config(void)
 	// HAL_NVIC_EnableIRQ(OV7725_VSYNC_EXTI_IRQ);
 
 	/* 按键0引脚为输入模式 */
-	rt_pin_mode(OV7725_VSYNC_PIN, PIN_MODE_INPUT_PULLUP);
-	/* 绑定中断，下降沿模式，回调函数名为beep_on */
-	rt_pin_attach_irq(OV7725_VSYNC_PIN, PIN_IRQ_MODE_FALLING, my_ov7725_interrupt, RT_NULL);
+	rt_pin_mode(OV7725_VSYNC_PIN, PIN_MODE_INPUT);
+	/* 绑定中断，下降沿模式 */
+	rt_pin_attach_irq(OV7725_VSYNC_PIN, PIN_IRQ_MODE_RISING, my_ov7725_interrupt, RT_NULL);
 	/* 使能中断 */
 	rt_pin_irq_enable(OV7725_VSYNC_PIN, PIN_IRQ_ENABLE);
 }
@@ -736,24 +736,16 @@ void ImagDisp(uint16_t sx, uint16_t sy, uint16_t width, uint16_t height)
 	}
 }
 
-void my_ov7725_test_init(void)
+rt_err_t my_ov7725_test_init(void)
 {
 	uint8_t retry = 0;
-	LCD_SetFont(&Font8x16);
-	LCD_SetColors(RED, BLACK);
-	ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH); /* 清屏，显示全黑 */
-	/********显示字符串示例*******/
-	ILI9341_DispStringLine_EN(LINE(0), "BH OV7725 Test Demo");
 	/* ov7725 gpio 初始化 */
 	OV7725_GPIO_Config();
-	led_embedded_color(LED_BLUE);
 	/* ov7725 寄存器默认配置初始化 */
 	while (OV7725_Init() != SUCCESS) {
 		retry++;
 		if (retry > 5) {
-			ILI9341_DispStringLine_EN(LINE(2), "No OV7725 module detected!");
-			while (1)
-				;
+			return -RT_ERROR;
 		}
 	}
 	/*根据摄像头参数组配置模式*/
@@ -770,69 +762,63 @@ void my_ov7725_test_init(void)
 	OV7725_Special_Effect(cam_mode.effect);
 	/*设置图像采样及模式大小*/
 	OV7725_Window_Set(cam_mode.cam_sx, cam_mode.cam_sy, cam_mode.cam_width, cam_mode.cam_height, cam_mode.QVGA_VGA);
-	/* 设置液晶扫描模式 */
-	ILI9341_GramScan(cam_mode.lcd_scan);
-	ILI9341_DispStringLine_EN(LINE(2), "OV7725 initialize success!");
 
 	Ov7725_vsync = 0;
+	return RT_EOK;
 }
 
 void my_ov7725_test(void)
 {
 	/*接收到新图像进行显示*/
 	if (Ov7725_vsync == 2) {
+		led_embedded_color(LED_BLUE);
 		FIFO_PREPARE; /*FIFO准备*/
 		ImagDisp(cam_mode.lcd_sx, cam_mode.lcd_sy, cam_mode.cam_width, cam_mode.cam_height); /*采集并显示*/
 
 		Ov7725_vsync = 0;
-		led_embedded_color(LED_RED);
-	}
-
-	/*检测按键*/
-	if (key1_isPressed()) {
-		/*LED反转*/
 		led_embedded_color(LED_GREEN);
 	}
+
 	/*检测按键*/
-	if (key2_isPressed()) {
-		/*LED反转*/
-		led_embedded_color(LED_BLUE);
+	// if (key2_isPressed()) {
+	// 	/*LED反转*/
+	// 	led_embedded_color(LED_BLUE);
 
-		/*动态配置摄像头的模式，
-			有需要可以添加使用串口、用户界面下拉选择框等方式修改这些变量，
-			达到程序运行时更改摄像头模式的目的*/
-		cam_mode.QVGA_VGA = 0, //QVGA模式
-			cam_mode.cam_sx = 0, cam_mode.cam_sy = 0,
+	// 	/*动态配置摄像头的模式，
+	// 		有需要可以添加使用串口、用户界面下拉选择框等方式修改这些变量，
+	// 		达到程序运行时更改摄像头模式的目的*/
+	// 	cam_mode.QVGA_VGA = 0, //QVGA模式
+	// 		cam_mode.cam_sx = 0, cam_mode.cam_sy = 0,
 
-		cam_mode.cam_width = 320, cam_mode.cam_height = 240,
+	// 	cam_mode.cam_width = 320, cam_mode.cam_height = 240,
 
-		cam_mode.lcd_sx = 0, cam_mode.lcd_sy = 0, cam_mode.lcd_scan = 3,
-		//LCD扫描模式，本横屏配置可用1、3、5、7模式
+	// 	cam_mode.lcd_sx = 0, cam_mode.lcd_sy = 0, cam_mode.lcd_scan = 3,
+	// 	//LCD扫描模式，本横屏配置可用1、3、5、7模式
 
-			//以下可根据自己的需要调整，参数范围见结构体类型定义
-			cam_mode.light_mode = 0, //自动光照模式
-			cam_mode.saturation = 0, cam_mode.brightness = 0, cam_mode.contrast = 0,
-		cam_mode.effect = 1, //黑白模式
+	// 		//以下可根据自己的需要调整，参数范围见结构体类型定义
+	// 		cam_mode.light_mode = 0, //自动光照模式
+	// 		cam_mode.saturation = 0, cam_mode.brightness = 0, cam_mode.contrast = 0,
+	// 	cam_mode.effect = 1, //黑白模式
 
-			/*根据摄像头参数写入配置*/
-			OV7725_Special_Effect(cam_mode.effect);
-		/*光照模式*/
-		OV7725_Light_Mode(cam_mode.light_mode);
-		/*饱和度*/
-		OV7725_Color_Saturation(cam_mode.saturation);
-		/*光照度*/
-		OV7725_Brightness(cam_mode.brightness);
-		/*对比度*/
-		OV7725_Contrast(cam_mode.contrast);
-		/*特殊效果*/
-		OV7725_Special_Effect(cam_mode.effect);
+	// 		/*根据摄像头参数写入配置*/
+	// 		OV7725_Special_Effect(cam_mode.effect);
+	// 	/*光照模式*/
+	// 	OV7725_Light_Mode(cam_mode.light_mode);
+	// 	/*饱和度*/
+	// 	OV7725_Color_Saturation(cam_mode.saturation);
+	// 	/*光照度*/
+	// 	OV7725_Brightness(cam_mode.brightness);
+	// 	/*对比度*/
+	// 	OV7725_Contrast(cam_mode.contrast);
+	// 	/*特殊效果*/
+	// 	OV7725_Special_Effect(cam_mode.effect);
 
-		/*设置图像采样及模式大小*/
-		OV7725_Window_Set(cam_mode.cam_sx, cam_mode.cam_sy, cam_mode.cam_width, cam_mode.cam_height, cam_mode.QVGA_VGA);
+	// 	/*设置图像采样及模式大小*/
+	// 	OV7725_Window_Set(cam_mode.cam_sx, cam_mode.cam_sy, cam_mode.cam_width, cam_mode.cam_height, cam_mode.QVGA_VGA);
 
-		/* 设置液晶扫描模式 */
-		ILI9341_GramScan(cam_mode.lcd_scan);
-	}
+	// 	/* 设置液晶扫描模式 */
+	// 	ILI9341_GramScan(cam_mode.lcd_scan);
+	// }
 }
 
 /****************************End OF File*************************************/

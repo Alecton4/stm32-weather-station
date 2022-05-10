@@ -14,7 +14,7 @@
   ******************************************************************************
   */
 
-#include "bsp_xpt2046_lcd.h"
+#include "bsp_lcd_xpt2046.h"
 #include "led_embedded.h"
 
 /******************************* 声明 XPT2046 相关的静态函数 ***************************/
@@ -826,7 +826,7 @@ void XPT2046_TouchEvenHandler(void)
 		XPT2046_Get_TouchedPoint(&cinfo, strXPT2046_TouchPara);
 
 		//输出调试信息到串口
-		XPT2046_DEBUG("x=%d,y=%d", cinfo.x, cinfo.y);
+		// XPT2046_DEBUG("x=%d,y=%d", cinfo.x, cinfo.y);
 
 		//调用触摸被按下时的处理函数，可在该函数编写自己的触摸按下处理过程
 		XPT2046_TouchDown(&cinfo);
