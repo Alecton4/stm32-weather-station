@@ -11,7 +11,7 @@
 #define GP2Y1014AU0F_CONVERT_BITS (1 << 12) /* 转换位数为12位 */
 
 #define COV_RATIO (100 / 0.5) //ug/m^3 / mv
-#define VOLTAGE_NO_DUST 0.1
+#define VOLTAGE_NO_DUST 0.4
 #define VOLTAGE_SYS 3.3
 
 // struct gp2y1014au0f_device_struct {

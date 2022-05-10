@@ -47,6 +47,21 @@ void fill_buffer(rt_uint8_t *buff, rt_uint32_t buff_length)
 	}
 }
 
+void sdcard_appendNewData(char *buffer, uint32_t size)
+{
+	int fd;
+
+	/* 以创建和读写模式打开 /text.txt 文件，如果该文件不存在则创建该文件 */
+	fd = open("/data.txt", O_WRONLY | O_CREAT | O_APPEND);
+	if (fd >= 0) {
+		LOG_D("Writing %s to data.txt.\n", buffer);
+		// size = sizeof(buffer); // BUG
+		write(fd, buffer, size);
+		close(fd);
+		LOG_D("Write done.\n");
+	}
+}
+
 static int sd_sample(int argc, char *argv[])
 {
 	rt_err_t ret;
@@ -130,26 +145,6 @@ MSH_CMD_EXPORT(sd_sample, sd device sample);
  * O_APPEND 	当读写文件时会从文件尾开始移动，也就是说写入的数据会以附加的方式添加到文件的尾部。
  * O_TRUNC 	如果文件已经存在，则清空文件中的内容
 */
-
-static void append_sample_1(void)
-{
-	int fd, size;
-	char s[] = "RT-Thread Programmer!", buffer[80];
-	// !!! important
-	s[rt_strlen(s)] = '\n';
-
-	LOG_D("Write string %s to test.txt.\n", s);
-
-	/* 以创建和读写模式打开 /text.txt 文件，如果该文件不存在则创建该文件 */
-	fd = open("/text1.txt", O_WRONLY | O_CREAT | O_APPEND);
-	if (fd >= 0) {
-		write(fd, s, sizeof(s));
-		write(fd, s, sizeof(s));
-		close(fd);
-		LOG_D("Write done.\n");
-	}
-}
-MSH_CMD_EXPORT(append_sample_1, append text sample);
 
 static void readwrite_sample(void)
 {

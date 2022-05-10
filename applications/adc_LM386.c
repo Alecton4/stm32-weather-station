@@ -113,9 +113,9 @@ double my_lm386_get_data()
 	HAL_ADC_PollForConversion(&hadc1, 100);
 
 	value = HAL_ADC_GetValue(&hadc1);
-	LOG_D("the value is: %d", value);
+	// LOG_D("the value is: %d", value);
 	voltage = value / 4096.0 * 3.3;
-	LOG_D("the voltage is: %0.2f", voltage);
+	// LOG_D("the voltage is: %0.2f", voltage);
 
 	HAL_ADC_Stop(&hadc1);
 	return voltage;

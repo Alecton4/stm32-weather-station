@@ -28,6 +28,7 @@ rt_tick_t hmc5883l_curr_milli = 0;
 const rt_tick_t HMC5883L_DELAY = 1000;
 struct hmc5883l_device_struct *hmc5883l = RT_NULL;
 struct hmc5883l_data_struct hmc5883l_rawData;
+double hmc5883l_heading;
 // bme280
 rt_tick_t bme280_prev_milli = 0;
 rt_tick_t bme280_curr_milli = 0;
@@ -55,6 +56,8 @@ double lm386_rawData;
 // ov7725
 extern uint8_t Ov7725_vsync;
 extern OV7725_MODE_PARAM cam_mode;
+// sd card
+rt_bool_t isSavingData = RT_FALSE;
 // scene
 rt_bool_t scene_isChanged = RT_TRUE;
 // menu
@@ -69,10 +72,10 @@ SCENE currScene = SCENE_MENU;
 SCENE prevScene = SCENE_MENU;
 SCENE selectScene = SCENE_DISP_DATA;
 rt_bool_t select_isChanged = RT_FALSE;
-// show data
-rt_tick_t display_prev_milli = 0;
-rt_tick_t display_curr_milli = 0;
-const rt_tick_t DISPLAY_DELAY = 1000;
+// display data
+rt_tick_t DISP_DATA_prev_milli = 0;
+rt_tick_t DISP_DATA_curr_milli = 0;
+const rt_tick_t DISP_DATA_DELAY = 1000;
 // take photo
 rt_bool_t takePhoto_isSuccess = RT_TRUE;
 // sd card
@@ -82,18 +85,21 @@ rt_bool_t isEjectSuccess = RT_TRUE;
 // -------- FUNCTION DECLARATION --------
 rt_err_t mainFuncInit(void);
 rt_err_t mainFunc(void);
+// store data to sd card
+void sdcard_saveCurrData(void);
 // scene tasks
 void MENU_task(void);
 void MENU_updateSelect(void);
 void DISP_DATA_task(void);
+void DISP_DATA_updateData(void);
 void TAKE_PHOTO_task(void);
 void SD_CARD_task(void);
 void SETTINGS_task(void);
 // key interrupts for different scenes
 void key1_irq_MENU(void);
 void key2_irq_MENU(void);
-void key1_irq_SHOW_DATA(void);
-void key2_irq_SHOW_DATA(void);
+void key1_irq_DISP_DATA(void);
+void key2_irq_DISP_DATA(void);
 void key1_irq_TAKE_PHOTO(void);
 void key2_irq_TAKE_PHOTO(void);
 void key1_irq_SD_CARD(void);
@@ -135,11 +141,11 @@ int main(void)
 	int count = 1;
 	while (count++) {
 		// my_key_and_led_test();
-		// my_hmc5883l_test();
-		// my_bme280_test();
-		// my_ltr390_test();
-		// my_gp2y1014au0f_test();
-		// my_lm386_test();
+		my_hmc5883l_test();
+		my_bme280_test();
+		my_ltr390_test();
+		my_gp2y1014au0f_test();
+		my_lm386_test();
 		// LCD_Direction_Show();
 		// XPT2046_TouchEvenHandler();
 		// my_ov7725_test();
@@ -287,6 +293,7 @@ rt_err_t mainFunc(void)
 
 		} else if (select_isChanged) {
 			select_isChanged = RT_FALSE;
+
 			MENU_updateSelect();
 			return RT_EOK;
 
@@ -298,22 +305,33 @@ rt_err_t mainFunc(void)
 		break;
 
 	case SCENE_DISP_DATA:
+
 		if (scene_isChanged) {
 			scene_isChanged = RT_FALSE;
 
 			// rebind key interrupt
 			rt_pin_detach_irq(KEY1_EMBEDDED);
-			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_MENU, RT_NULL);
+			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_DISP_DATA, RT_NULL);
 			rt_pin_irq_enable(KEY1_EMBEDDED, PIN_IRQ_ENABLE);
 			rt_pin_detach_irq(KEY2_EMBEDDED);
-			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_MENU, RT_NULL);
+			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_DISP_DATA, RT_NULL);
 			rt_pin_irq_enable(KEY2_EMBEDDED, PIN_IRQ_ENABLE);
 
 			DISP_DATA_task();
 			return RT_EOK;
 
 		} else {
-			// do nothing
+			DISP_DATA_curr_milli = rt_tick_get_millisecond();
+			if (DISP_DATA_curr_milli - DISP_DATA_prev_milli >= DISP_DATA_DELAY) {
+				DISP_DATA_prev_milli = DISP_DATA_curr_milli;
+				DISP_DATA_updateData();
+			}
+
+			if (isSavingData == RT_TRUE) {
+				isSavingData = RT_FALSE;
+				sdcard_saveCurrData();
+			}
+
 			return RT_EOK;
 		}
 
@@ -325,17 +343,17 @@ rt_err_t mainFunc(void)
 
 			// rebind key interrupt
 			rt_pin_detach_irq(KEY1_EMBEDDED);
-			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_MENU, RT_NULL);
+			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_TAKE_PHOTO, RT_NULL);
 			rt_pin_irq_enable(KEY1_EMBEDDED, PIN_IRQ_ENABLE);
 			rt_pin_detach_irq(KEY2_EMBEDDED);
-			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_MENU, RT_NULL);
+			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_TAKE_PHOTO, RT_NULL);
 			rt_pin_irq_enable(KEY2_EMBEDDED, PIN_IRQ_ENABLE);
 
-			TAKE_PHOTO_task();
+			// ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
 			return RT_EOK;
 
 		} else {
-			// do nothing
+			TAKE_PHOTO_task();
 			return RT_EOK;
 		}
 
@@ -347,10 +365,10 @@ rt_err_t mainFunc(void)
 
 			// rebind key interrupt
 			rt_pin_detach_irq(KEY1_EMBEDDED);
-			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_MENU, RT_NULL);
+			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_SD_CARD, RT_NULL);
 			rt_pin_irq_enable(KEY1_EMBEDDED, PIN_IRQ_ENABLE);
 			rt_pin_detach_irq(KEY2_EMBEDDED);
-			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_MENU, RT_NULL);
+			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_SD_CARD, RT_NULL);
 			rt_pin_irq_enable(KEY2_EMBEDDED, PIN_IRQ_ENABLE);
 
 			SD_CARD_task();
@@ -369,10 +387,10 @@ rt_err_t mainFunc(void)
 
 			// rebind key interrupt
 			rt_pin_detach_irq(KEY1_EMBEDDED);
-			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_MENU, RT_NULL);
+			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_SETTING, RT_NULL);
 			rt_pin_irq_enable(KEY1_EMBEDDED, PIN_IRQ_ENABLE);
 			rt_pin_detach_irq(KEY2_EMBEDDED);
-			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_MENU, RT_NULL);
+			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_SETTING, RT_NULL);
 			rt_pin_irq_enable(KEY2_EMBEDDED, PIN_IRQ_ENABLE);
 
 			SETTINGS_task();
@@ -391,18 +409,66 @@ rt_err_t mainFunc(void)
 	}
 }
 
+// store data to sd card
+void sdcard_saveCurrData(void)
+{
+	led_embedded_color(LED_BLUE);
+	ILI9341_Clear(0, LINE(13), LCD_X_LENGTH, 16);
+	LCD_SetFont(&Font8x16);
+	LCD_SetTextColor(CL_YELLOW);
+	ILI9341_DispStringLine_EN(LINE(13), "         Saving current data...");
+
+	char headingStr[32];
+	char temperatureStr[32];
+	char humidityStr[32];
+	char baroStr[32];
+	char uviStr[32];
+	char luxStr[32];
+	char pmStr[32];
+	char soundStr[32];
+	sprintf(headingStr, "Heading:\t%f\n", hmc5883l_heading);
+	sprintf(temperatureStr, "Temperature:\t%f\n", bme280_rawData.temperature);
+	sprintf(humidityStr, "Humidity:\t%f\n", bme280_rawData.humidity);
+	sprintf(baroStr, "Baro:\t%f\n", bme280_rawData.pressure / 100);
+	sprintf(uviStr, "UVI:\t%d\n", ltr390_rawData.uvi);
+	sprintf(luxStr, "LUX:\t%f\n", ltr390_rawData.lux);
+	sprintf(pmStr, "PM2.5:\t%f\n", gp2y1014au0f_rawData);
+	sprintf(soundStr, "Sound:\t%f\n", lm386_rawData);
+	char dataBlock[8 * 32];
+	strcpy(dataBlock, headingStr);
+	strcat(dataBlock, temperatureStr);
+	strcat(dataBlock, humidityStr);
+	strcat(dataBlock, baroStr);
+	strcat(dataBlock, uviStr);
+	strcat(dataBlock, luxStr);
+	strcat(dataBlock, pmStr);
+	strcat(dataBlock, soundStr);
+	// LOG_D("%s", dataBlock);
+	rt_uint32_t dataLen = rt_strlen(dataBlock);
+	// for (rt_uint32_t i = dataLen; i < 8 * 32; i++) {
+	// 	dataBlock[i] = ' ';
+	// }
+	// !!! important
+	dataBlock[dataLen] = '\n';
+	sdcard_appendNewData(dataBlock, dataLen + 1);
+
+	led_embedded_color(LED_GREEN);
+	LCD_SetTextColor(CL_GREEN);
+	ILI9341_DispStringLine_EN(LINE(13), "     Saving current data succeeded!");
+}
+
 // scene tasks
 void MENU_task(void)
 {
 	ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
 	LCD_SetFont(&Font24x32);
 	LCD_SetTextColor(CL_CYAN);
-	ILI9341_DispString_EN(3 * 24, LINE(0), "WELCOME!");
+	ILI9341_DispString_EN(3 * 24 - 4, LINE(0), "WELCOME!");
 	LCD_SetFont(&Font8x16);
 	LCD_SetTextColor(CL_GREY1);
 	ILI9341_DispString_EN(9 * 8, LINE(2), "K1: Select | K2: Enter");
 	LCD_SetFont(&Font16x24);
-	LCD_SetTextColor(CL_GREY4);
+	LCD_SetTextColor(CL_GREY3);
 	ILI9341_DispStringLine_EN(LINE(3), "    Display Data");
 	ILI9341_DispStringLine_EN(LINE(4), "    Take Photo");
 	ILI9341_DispStringLine_EN(LINE(5), "    Eject SD Card");
@@ -414,24 +480,94 @@ void MENU_updateSelect(void)
 {
 	LCD_SetFont(&Font16x24);
 	LCD_SetTextColor(CL_GREEN);
-	ILI9341_Clear(0, LINE(3), 3 * 16, LINE(7));
+	ILI9341_Clear(0, LINE(3), 3 * 16, 4 * 24);
 	ILI9341_DispStringLine_EN(LINE(selectScene + 2), " >>");
 }
 
 void DISP_DATA_task(void)
 {
+	ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
+	LCD_SetFont(&Font24x32);
+	LCD_SetTextColor(CL_CYAN);
+	ILI9341_DispString_EN(3 * 24 - 8, LINE(0), "ENV DATA");
+	LCD_SetFont(&Font8x16);
+	LCD_SetTextColor(CL_GREY1);
+	ILI9341_DispString_EN(9 * 8 - 8, LINE(2), "K1: Save to SD | K2: Back");
+	LCD_SetTextColor(CL_GREY3);
+	// title: 0 - 23 | data: 23 - 30 | unit: 30
+	ILI9341_DispStringLine_EN(LINE(4U), "      Heading:       ");
+	ILI9341_DispStringLine_EN(LINE(5U), "      Temperature:   ");
+	ILI9341_DispStringLine_EN(LINE(6U), "      Humidity:      ");
+	ILI9341_DispStringLine_EN(LINE(7U), "      Baro Pressure: ");
+	ILI9341_DispStringLine_EN(LINE(8U), "      UV Index:      ");
+	ILI9341_DispStringLine_EN(LINE(9U), "      Luminance:     ");
+	ILI9341_DispStringLine_EN(LINE(10), "      PM2.5 Level:   ");
+	ILI9341_DispStringLine_EN(LINE(11), "      Sound Level:   ");
+	ILI9341_DispString_EN(28 * 8, LINE(4U), " *");
+	ILI9341_DispString_EN(28 * 8, LINE(5U), " *C");
+	ILI9341_DispString_EN(28 * 8, LINE(6U), " %");
+	ILI9341_DispString_EN(28 * 8, LINE(7U), " hPa");
+	ILI9341_DispString_EN(28 * 8, LINE(8U), " uvi");
+	ILI9341_DispString_EN(28 * 8, LINE(9U), " lux");
+	ILI9341_DispString_EN(28 * 8, LINE(10), " ug/m3");
+	ILI9341_DispString_EN(28 * 8, LINE(11), " level");
+	// update data
+	DISP_DATA_curr_milli = rt_tick_get_millisecond();
+	DISP_DATA_prev_milli == DISP_DATA_curr_milli;
+	DISP_DATA_updateData();
+}
+
+void DISP_DATA_updateData(void)
+{
+	char headingStr[8];
+	char temperatureStr[8];
+	char humidityStr[8];
+	char baroStr[8];
+	char uviStr[8];
+	char luxStr[8];
+	char pmStr[8];
+	char soundStr[8];
+	sprintf(headingStr, "%-4.2f", hmc5883l_heading);
+	sprintf(temperatureStr, "%-4.2f", bme280_rawData.temperature);
+	sprintf(humidityStr, "%-4.2f", bme280_rawData.humidity);
+	sprintf(baroStr, "%-4.2f", bme280_rawData.pressure / 100);
+	sprintf(uviStr, "%-d", ltr390_rawData.uvi);
+	sprintf(luxStr, "%-5.1f", ltr390_rawData.lux);
+	sprintf(pmStr, "%-4.2f", gp2y1014au0f_rawData);
+	sprintf(soundStr, "%-4.2f", lm386_rawData);
+	LCD_SetFont(&Font8x16);
+	LCD_SetTextColor(CL_WHITE);
+	// title: 0 - 23 | data: 23 - 30 | unit: 30
+	ILI9341_Clear(21 * 8, LINE(4), 8 * 8, 8 * 16);
+	ILI9341_DispString_EN(21 * 8, LINE(4U), headingStr);
+	ILI9341_DispString_EN(21 * 8, LINE(5U), temperatureStr);
+	ILI9341_DispString_EN(21 * 8, LINE(6U), humidityStr);
+	ILI9341_DispString_EN(21 * 8, LINE(7U), baroStr);
+	ILI9341_DispString_EN(21 * 8, LINE(8U), uviStr);
+	ILI9341_DispString_EN(21 * 8, LINE(9U), luxStr);
+	ILI9341_DispString_EN(21 * 8, LINE(10), pmStr);
+	ILI9341_DispString_EN(21 * 8, LINE(11), soundStr);
 }
 
 void TAKE_PHOTO_task(void)
 {
+	my_ov7725_test();
 }
 
 void SD_CARD_task(void)
 {
+	ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
+	LCD_SetFont(&Font24x32);
+	LCD_SetTextColor(CL_YELLOW);
+	ILI9341_DispString_EN(0, LINE(0), "CONFIRM TO EJECT?");
+	LCD_SetFont(&Font8x16);
+	LCD_SetTextColor(CL_WHITE);
+	ILI9341_DispString_EN(9 * 8, LINE(2), "K1: Select | K2: Enter");
 }
 
 void SETTINGS_task(void)
 {
+	ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
 }
 
 // key interrupts for different scenes
@@ -446,21 +582,21 @@ void key1_irq_MENU(void)
 
 void key2_irq_MENU(void)
 {
+	scene_isChanged = RT_TRUE;
 	prevScene = currScene;
 	currScene = selectScene;
+}
+
+void key1_irq_DISP_DATA(void)
+{
+	isSavingData = RT_TRUE;
+}
+
+void key2_irq_DISP_DATA(void)
+{
 	scene_isChanged = RT_TRUE;
-}
-
-void key1_irq_SHOW_DATA(void)
-{
-	// TODO write to SD card
-}
-
-void key2_irq_SHOW_DATA(void)
-{
 	prevScene = currScene;
 	currScene = SCENE_MENU;
-	scene_isChanged = RT_TRUE;
 }
 
 void key1_irq_TAKE_PHOTO(void)
@@ -470,9 +606,9 @@ void key1_irq_TAKE_PHOTO(void)
 
 void key2_irq_TAKE_PHOTO(void)
 {
+	scene_isChanged = RT_TRUE;
 	prevScene = currScene;
 	currScene = SCENE_MENU;
-	scene_isChanged = RT_TRUE;
 }
 
 void key1_irq_SD_CARD(void)
@@ -487,20 +623,21 @@ void key1_irq_SD_CARD(void)
 
 void key2_irq_SD_CARD(void)
 {
+	scene_isChanged = RT_TRUE;
 	prevScene = currScene;
 	currScene = SCENE_MENU;
-	scene_isChanged = RT_TRUE;
 }
 
 void key1_irq_SETTING(void)
 {
+	// TODO
 }
 
 void key2_irq_SETTING(void)
 {
+	scene_isChanged = RT_TRUE;
 	prevScene = currScene;
 	currScene = SCENE_MENU;
-	scene_isChanged = RT_TRUE;
 }
 
 void my_key_and_led_test(void)
@@ -523,9 +660,11 @@ void my_hmc5883l_test(void)
 	if ((hmc5883l_curr_milli - hmc5883l_prev_milli >= HMC5883L_DELAY) && (hmc5883l != RT_NULL)) {
 		hmc5883l_prev_milli = hmc5883l_curr_milli;
 		if (my_hmc5883l_get_data(hmc5883l, &hmc5883l_rawData) == RT_EOK) {
-			LOG_D("x: %d", hmc5883l_rawData.x);
-			LOG_D("y: %d", hmc5883l_rawData.y);
-			LOG_D("z: %d", hmc5883l_rawData.z);
+			// LOG_D("x: %d", hmc5883l_rawData.x);
+			// LOG_D("y: %d", hmc5883l_rawData.y);
+			// LOG_D("z: %d", hmc5883l_rawData.z);
+			const double PI = 3.14159265;
+			hmc5883l_heading = atan2(hmc5883l_rawData.y, hmc5883l_rawData.x) * (180 / PI) + 180;
 		} else {
 			LOG_E("HMC5883L get data failed!");
 			my_hmc5883l_destroy(hmc5883l);

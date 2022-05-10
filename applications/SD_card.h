@@ -11,5 +11,6 @@
 
 rt_err_t sdcard_init(void);
 rt_err_t sdcard_unmount(void);
+void sdcard_appendNewData(char *buffer, uint32_t size);
 
 #endif
