@@ -17,11 +17,14 @@
 // -------- VARIABLES --------
 // init
 rt_uint32_t initCount = 0;
+
 // led
 rt_bool_t led_isOn = RT_FALSE;
+
 // key
 extern rt_bool_t key1_isChanged;
 extern rt_bool_t key2_isChanged;
+
 // hmc5883l
 rt_tick_t hmc5883l_prev_milli = 0;
 rt_tick_t hmc5883l_curr_milli = 0;
@@ -29,38 +32,43 @@ const rt_tick_t HMC5883L_DELAY = 1000;
 struct hmc5883l_device_struct *hmc5883l = RT_NULL;
 struct hmc5883l_data_struct hmc5883l_rawData;
 double hmc5883l_heading;
+
 // bme280
 rt_tick_t bme280_prev_milli = 0;
 rt_tick_t bme280_curr_milli = 0;
 const rt_tick_t BME280_DELAY = 1000;
 struct bme280_device_struct *bme280 = RT_NULL;
 struct bme280_data bme280_rawData;
+
 // ltr390
 rt_tick_t ltr390_prev_milli = 0;
 rt_tick_t ltr390_curr_milli = 0;
 const rt_tick_t LTR390_DELAY = 1000;
 struct ltr390_device_struct *ltr390 = RT_NULL;
 struct ltr390_data_struct ltr390_rawData;
+
 // gp2y1014au0f
 rt_tick_t gp2y1014au0f_prev_milli = 0;
 rt_tick_t gp2y1014au0f_curr_milli = 0;
 const rt_tick_t GP2Y1014AU0F_DELAY = 1000;
 // struct gp2y1014au0f_device_struct *gp2y1014au0f = RT_NULL; // !!! don't use
 double gp2y1014au0f_rawData;
+
 // lm386
 rt_tick_t lm386_prev_milli = 0;
 rt_tick_t lm386_curr_milli = 0;
 const rt_tick_t LM386_DELAY = 10;
 // struct lm386_device_struct *lm386 = RT_NULL; // !!! don't use
 double lm386_rawData;
+
 // ov7725
 extern uint8_t Ov7725_vsync;
 extern OV7725_MODE_PARAM cam_mode;
+
 // sd card
 rt_bool_t isSavingData = RT_FALSE;
+
 // scene
-rt_bool_t scene_isChanged = RT_TRUE;
-// menu
 typedef enum {
 	SCENE_MENU = 0,
 	SCENE_DISP_DATA = 1,
@@ -70,21 +78,60 @@ typedef enum {
 } SCENE;
 SCENE currScene = SCENE_MENU;
 SCENE prevScene = SCENE_MENU;
+rt_bool_t scene_isChanged = RT_TRUE;
 SCENE selectScene = SCENE_DISP_DATA;
-rt_bool_t select_isChanged = RT_FALSE;
+rt_bool_t sceneSelect_isChanged = RT_FALSE;
+
 // display data
 rt_tick_t DISP_DATA_prev_milli = 0;
 rt_tick_t DISP_DATA_curr_milli = 0;
 const rt_tick_t DISP_DATA_DELAY = 1000;
+
 // take photo
 rt_bool_t takePhoto_isSuccess = RT_TRUE;
-// sd card
+
+// eject sd card
 rt_bool_t isEjecting = RT_FALSE;
 rt_bool_t isEjectSuccess = RT_TRUE;
+
+// settings
+typedef enum {
+	SETTING_NO = 0,
+	SETTING_HMC5883L = 1,
+	SETTING_BME280 = 2,
+	SETTING_LTR390 = 3,
+	SETTING_GP2Y1014AU0F = 4,
+	SETTING_LM386 = 5,
+	SETTING_AUTO_SAVE = 6,
+	SETTING_BACK = 7,
+} SETTING_SELECT;
+SETTING_SELECT currSetting = SETTING_BACK;
+SETTING_SELECT prevSetting = SETTING_BACK;
+rt_bool_t setting_isChanged = RT_TRUE;
+SETTING_SELECT selectSetting = SETTING_HMC5883L;
+rt_bool_t settingSelect_isChanged = RT_FALSE;
+// setting delay
+typedef enum {
+	DELAY_NO = 0,
+	DELAY_0_5 = 1,
+	DELAY_1 = 2,
+	DELAY_2 = 3,
+	DELAY_5 = 4,
+	DELAY_10 = 5,
+	DELAY_60 = 6,
+	DELAY_BACK = 7,
+} DELAY_SELECT;
+DELAY_SELECT currDelay = DELAY_BACK;
+DELAY_SELECT prevDelay = DELAY_BACK;
+rt_bool_t delay_isChanged = RT_TRUE;
+DELAY_SELECT selectDelay = DELAY_0_5;
+rt_bool_t delaySelect_isChanged = RT_FALSE;
 
 // -------- FUNCTION DECLARATION --------
 rt_err_t mainFuncInit(void);
 rt_err_t mainFunc(void);
+rt_err_t enter_SETTING(void);
+rt_err_t enter_SETTING_DELAY(void);
 // store data to sd card
 void sdcard_saveCurrData(void);
 // scene tasks
@@ -95,6 +142,9 @@ void DISP_DATA_updateData(void);
 void TAKE_PHOTO_task(void);
 void SD_CARD_task(void);
 void SETTINGS_task(void);
+void SETTINGS_updateSelect(void);
+void SETTINGS_DELAY_task(void);
+void SETTINGS_DELAY_updateSelect(void);
 // key interrupts for different scenes
 void key1_irq_MENU(void);
 void key2_irq_MENU(void);
@@ -104,8 +154,10 @@ void key1_irq_TAKE_PHOTO(void);
 void key2_irq_TAKE_PHOTO(void);
 void key1_irq_SD_CARD(void);
 void key2_irq_SD_CARD(void);
-void key1_irq_SETTING(void);
-void key2_irq_SETTING(void);
+void key1_irq_SETTING_SELECT(void);
+void key2_irq_SETTING_SELECT(void);
+void key1_irq_SETTING_DELAY_SELECT(void);
+void key2_irq_SETTING_DELAY_SELECT(void);
 // my tests
 void my_key_and_led_test(void);
 void my_hmc5883l_test(void);
@@ -171,8 +223,10 @@ rt_err_t mainFuncInit(void)
 
 	// init error message
 	LCD_SetFont(&Font16x24);
+	LCD_SetTextColor(CL_BLUE4);
+	ILI9341_DispStringLine_EN(LINE(0), "Smart Env Tracker");
 	LCD_SetTextColor(CL_CYAN);
-	ILI9341_DispStringLine_EN(LINE(0), "Initializing...");
+	ILI9341_DispStringLine_EN(LINE(1), "Initializing...");
 
 	// init led, key, sensor
 	LCD_SetFont(&Font8x16);
@@ -180,12 +234,12 @@ rt_err_t mainFuncInit(void)
 
 	led_embedded_init();
 	led_embedded_color(LED_GREEN);
-	ILI9341_DispStringLine_EN(LINE(2), "(1/9) LED init succeeded!");
+	ILI9341_DispStringLine_EN(LINE(3), "(1/9) LED init succeeded!");
 
 	led_embedded_color(LED_BLUE);
 	key_embedded_init();
 	led_embedded_color(LED_GREEN);
-	ILI9341_DispStringLine_EN(LINE(3), "(2/9) KEY init succeeded!");
+	ILI9341_DispStringLine_EN(LINE(4), "(2/9) KEY init succeeded!");
 
 	led_embedded_color(LED_BLUE);
 	hmc5883l = my_hmc5883l_init(HMC5883L_I2C_BUS, HMC5883L_ADDR);
@@ -193,11 +247,11 @@ rt_err_t mainFuncInit(void)
 		initStatus = -RT_ERROR;
 		LCD_SetTextColor(CL_RED);
 		led_embedded_color(LED_RED);
-		ILI9341_DispStringLine_EN(LINE(4), "(3/9) HMC5883L init failed!");
+		ILI9341_DispStringLine_EN(LINE(5), "(3/9) HMC5883L init failed!");
 		LCD_SetTextColor(CL_GREEN);
 	} else {
 		led_embedded_color(LED_GREEN);
-		ILI9341_DispStringLine_EN(LINE(4), "(3/9) HMC5883L init succeeded!");
+		ILI9341_DispStringLine_EN(LINE(5), "(3/9) HMC5883L init succeeded!");
 	}
 
 	led_embedded_color(LED_BLUE);
@@ -206,11 +260,11 @@ rt_err_t mainFuncInit(void)
 		initStatus = -RT_ERROR;
 		LCD_SetTextColor(CL_RED);
 		led_embedded_color(LED_RED);
-		ILI9341_DispStringLine_EN(LINE(5), "(4/9) BME280 init failed!");
+		ILI9341_DispStringLine_EN(LINE(6), "(4/9) BME280 init failed!");
 		LCD_SetTextColor(CL_GREEN);
 	} else {
 		led_embedded_color(LED_GREEN);
-		ILI9341_DispStringLine_EN(LINE(5), "(4/9) BME280 init succeeded!");
+		ILI9341_DispStringLine_EN(LINE(6), "(4/9) BME280 init succeeded!");
 	}
 
 	led_embedded_color(LED_BLUE);
@@ -219,23 +273,23 @@ rt_err_t mainFuncInit(void)
 		initStatus = -RT_ERROR;
 		LCD_SetTextColor(CL_RED);
 		led_embedded_color(LED_RED);
-		ILI9341_DispStringLine_EN(LINE(6), "(5/9) LTR390 init failed!");
+		ILI9341_DispStringLine_EN(LINE(7), "(5/9) LTR390 init failed!");
 		LCD_SetTextColor(CL_GREEN);
 	} else {
 		led_embedded_color(LED_GREEN);
-		ILI9341_DispStringLine_EN(LINE(6), "(5/9) LTR390 init succeeded!");
+		ILI9341_DispStringLine_EN(LINE(7), "(5/9) LTR390 init succeeded!");
 	}
 
 	led_embedded_color(LED_BLUE);
 	my_gp2y1014au0f_init();
 	led_embedded_color(LED_GREEN);
-	ILI9341_DispStringLine_EN(LINE(7), "(6/9) GP2Y1014AU0F init succeeded!");
+	ILI9341_DispStringLine_EN(LINE(8), "(6/9) GP2Y1014AU0F init succeeded!");
 
 	led_embedded_color(LED_BLUE);
 	// lm386 = my_lm386_init(LM386_ADC_DEV_NAME, LM386_ADC_DEV_CHANNEL); // !!! don't use
 	my_lm386_init();
 	led_embedded_color(LED_GREEN);
-	ILI9341_DispStringLine_EN(LINE(8), "(7/9) LM386 init succeeded!");
+	ILI9341_DispStringLine_EN(LINE(9), "(7/9) LM386 init succeeded!");
 
 	// init camera
 	led_embedded_color(LED_BLUE);
@@ -243,11 +297,11 @@ rt_err_t mainFuncInit(void)
 		initStatus = -RT_ERROR;
 		LCD_SetTextColor(CL_RED);
 		led_embedded_color(LED_RED);
-		ILI9341_DispStringLine_EN(LINE(9), "(8/9) OV7725 init failed!");
+		ILI9341_DispStringLine_EN(LINE(10), "(8/9) OV7725 init failed!");
 		LCD_SetTextColor(CL_GREEN);
 	} else {
 		led_embedded_color(LED_GREEN);
-		ILI9341_DispStringLine_EN(LINE(9), "(8/9) OV7725 init succeeded!");
+		ILI9341_DispStringLine_EN(LINE(10), "(8/9) OV7725 init succeeded!");
 	}
 
 	if (initStatus == RT_EOK) {
@@ -257,19 +311,22 @@ rt_err_t mainFuncInit(void)
 			initStatus = -RT_ERROR;
 			LCD_SetTextColor(CL_RED);
 			led_embedded_color(LED_RED);
-			ILI9341_DispStringLine_EN(LINE(10), "(9/9) SD card init failed!");
+			ILI9341_DispStringLine_EN(LINE(11), "(9/9) SD card init failed!");
 			LCD_SetTextColor(CL_GREEN);
 		} else {
 			led_embedded_color(LED_GREEN);
-			ILI9341_DispStringLine_EN(LINE(10), "(9/9) SD card init succeeded!");
+			ILI9341_DispStringLine_EN(LINE(11), "(9/9) SD card init succeeded!");
 		}
 	} else {
 		initStatus = -RT_ERROR;
 		LCD_SetTextColor(CL_YELLOW);
-		ILI9341_DispStringLine_EN(LINE(10), "(9/9) Skip SD card.");
+		ILI9341_DispStringLine_EN(LINE(11), "(9/9) Skip SD card.");
 		LCD_SetTextColor(CL_GREEN);
 	}
 
+	if (initStatus != RT_EOK) {
+		led_embedded_color(LED_RED);
+	}
 	return initStatus;
 }
 
@@ -291,8 +348,8 @@ rt_err_t mainFunc(void)
 			MENU_task();
 			return RT_EOK;
 
-		} else if (select_isChanged) {
-			select_isChanged = RT_FALSE;
+		} else if (sceneSelect_isChanged) {
+			sceneSelect_isChanged = RT_FALSE;
 
 			MENU_updateSelect();
 			return RT_EOK;
@@ -375,7 +432,11 @@ rt_err_t mainFunc(void)
 			return RT_EOK;
 
 		} else {
-			// do nothing
+			if (isEjecting == RT_TRUE) {
+				isEjecting = RT_FALSE;
+				SD_CARD_eject();
+			}
+
 			return RT_EOK;
 		}
 
@@ -385,15 +446,48 @@ rt_err_t mainFunc(void)
 		if (scene_isChanged) {
 			scene_isChanged = RT_FALSE;
 
+			// prepare to enter setting
+			prevSetting = currSetting;
+			currSetting = SETTING_NO;
+			settingSelect_isChanged = RT_TRUE;
+
+			return RT_EOK;
+
+		} else {
+			enter_SETTING();
+			return RT_EOK;
+		}
+
+		break;
+
+	default:
+		return -RT_ERROR;
+		break;
+	}
+}
+
+rt_err_t enter_SETTING(void)
+{
+	switch (currSetting) {
+	case SETTING_NO:
+		if (setting_isChanged) {
+			setting_isChanged = RT_FALSE;
+
 			// rebind key interrupt
 			rt_pin_detach_irq(KEY1_EMBEDDED);
-			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_SETTING, RT_NULL);
+			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_SETTING_SELECT, RT_NULL);
 			rt_pin_irq_enable(KEY1_EMBEDDED, PIN_IRQ_ENABLE);
 			rt_pin_detach_irq(KEY2_EMBEDDED);
-			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_SETTING, RT_NULL);
+			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_SETTING_SELECT, RT_NULL);
 			rt_pin_irq_enable(KEY2_EMBEDDED, PIN_IRQ_ENABLE);
 
 			SETTINGS_task();
+			return RT_EOK;
+
+		} else if (settingSelect_isChanged) {
+			settingSelect_isChanged = RT_FALSE;
+
+			SETTINGS_updateSelect();
 			return RT_EOK;
 
 		} else {
@@ -401,6 +495,114 @@ rt_err_t mainFunc(void)
 			return RT_EOK;
 		}
 
+		break;
+
+	case SETTING_HMC5883L:
+	case SETTING_BME280:
+	case SETTING_LTR390:
+	case SETTING_GP2Y1014AU0F:
+	case SETTING_LM386:
+		if (setting_isChanged) {
+			setting_isChanged = RT_FALSE;
+
+			// prepare to enter delay
+			prevDelay = currDelay;
+			currDelay = DELAY_NO;
+			delaySelect_isChanged = RT_TRUE;
+
+			return RT_EOK;
+
+		} else {
+			enter_SETTING_DELAY();
+			return RT_EOK;
+		}
+
+		break;
+
+	case SETTING_AUTO_SAVE:
+
+		break;
+
+	case SETTING_BACK:
+		prevScene = currScene;
+		currScene = SCENE_MENU;
+		scene_isChanged = RT_TRUE;
+
+		// reset parameters
+		currSetting = SETTING_BACK;
+		prevSetting = SETTING_BACK;
+		setting_isChanged = RT_TRUE;
+		selectSetting = SETTING_HMC5883L;
+		settingSelect_isChanged = RT_FALSE;
+
+		currDelay = DELAY_BACK;
+		prevDelay = DELAY_BACK;
+		delay_isChanged = RT_TRUE;
+		selectDelay = DELAY_0_5;
+		delaySelect_isChanged = RT_FALSE;
+
+		return RT_EOK;
+		break;
+
+	default:
+		return -RT_ERROR;
+		break;
+	}
+}
+
+rt_err_t enter_SETTING_DELAY(void)
+{
+	switch (currDelay) {
+	case DELAY_NO:
+		if (delay_isChanged) {
+			delay_isChanged = RT_FALSE;
+
+			// rebind key interrupt
+			rt_pin_detach_irq(KEY1_EMBEDDED);
+			rt_pin_attach_irq(KEY1_EMBEDDED, PIN_IRQ_MODE_RISING, key1_irq_SETTING_DELAY_SELECT, RT_NULL);
+			rt_pin_irq_enable(KEY1_EMBEDDED, PIN_IRQ_ENABLE);
+			rt_pin_detach_irq(KEY2_EMBEDDED);
+			rt_pin_attach_irq(KEY2_EMBEDDED, PIN_IRQ_MODE_RISING, key2_irq_SETTING_DELAY_SELECT, RT_NULL);
+			rt_pin_irq_enable(KEY2_EMBEDDED, PIN_IRQ_ENABLE);
+
+			SETTINGS_DELAY_task();
+			return RT_EOK;
+
+		} else if (delaySelect_isChanged) {
+			delaySelect_isChanged = RT_FALSE;
+
+			SETTINGS_DELAY_updateSelect();
+			return RT_EOK;
+
+		} else {
+			// do nothing
+			return RT_EOK;
+		}
+
+		break;
+
+	case DELAY_0_5:
+	case DELAY_1:
+	case DELAY_2:
+	case DELAY_5:
+	case DELAY_10:
+	case DELAY_60:
+
+		break;
+
+	case DELAY_BACK:
+		prevSetting = currSetting;
+		currSetting = SETTING_NO;
+		setting_isChanged = RT_TRUE;
+
+		// reset parameters
+		currDelay = DELAY_BACK;
+		prevDelay = DELAY_BACK;
+		delay_isChanged = RT_TRUE;
+		selectDelay = DELAY_0_5;
+		delaySelect_isChanged = RT_FALSE;
+
+		return RT_EOK;
 		break;
 
 	default:
@@ -473,6 +675,7 @@ void MENU_task(void)
 	ILI9341_DispStringLine_EN(LINE(4), "    Take Photo");
 	ILI9341_DispStringLine_EN(LINE(5), "    Eject SD Card");
 	ILI9341_DispStringLine_EN(LINE(6), "    Settings");
+
 	MENU_updateSelect();
 }
 
@@ -559,21 +762,92 @@ void SD_CARD_task(void)
 	ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
 	LCD_SetFont(&Font24x32);
 	LCD_SetTextColor(CL_YELLOW);
-	ILI9341_DispString_EN(0, LINE(0), "CONFIRM TO EJECT?");
-	LCD_SetFont(&Font8x16);
+	ILI9341_DispString_EN(3 * 24, LINE(2), "CONFIRM?");
+	LCD_SetFont(&Font16x24);
+	LCD_SetTextColor(CL_MAGENTA);
+	ILI9341_DispStringLine_EN(LINE(4), "     K1: CONFIRM");
 	LCD_SetTextColor(CL_WHITE);
-	ILI9341_DispString_EN(9 * 8, LINE(2), "K1: Select | K2: Enter");
+	ILI9341_DispStringLine_EN(LINE(5), "     K2: BACK");
+}
+
+void SD_CARD_eject(void)
+{
+	LCD_SetFont(&Font8x16);
+	LCD_SetTextColor(CL_YELLOW);
+	ILI9341_DispStringLine_EN(LINE(11), "          Ejecting SD card...");
+
+	sdcard_unmount();
+
+	LCD_SetTextColor(CL_GREEN);
+	ILI9341_DispStringLine_EN(LINE(11), "       Ejecting SD card succeeded!");
 }
 
 void SETTINGS_task(void)
 {
 	ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
+	LCD_SetFont(&Font24x32);
+	LCD_SetTextColor(CL_CYAN);
+	ILI9341_DispString_EN(3 * 24 - 8, LINE(0), "SETTINGS");
+	LCD_SetFont(&Font8x16);
+	LCD_SetTextColor(CL_GREY1);
+	ILI9341_DispString_EN(9 * 8, LINE(2), "K1: Select | K2: Back");
+	LCD_SetTextColor(CL_GREY3);
+	// title: 0 - 23 | data: 23 - 30 | unit: 30
+	ILI9341_DispStringLine_EN(LINE(4U), "          HMC5883L");
+	ILI9341_DispStringLine_EN(LINE(5U), "          BME280");
+	ILI9341_DispStringLine_EN(LINE(6U), "          LTR390");
+	ILI9341_DispStringLine_EN(LINE(7U), "          GP2Y1014AU0F");
+	ILI9341_DispStringLine_EN(LINE(8U), "          LM386");
+	ILI9341_DispStringLine_EN(LINE(9U), "          AUTO SAVE DATA");
+	LCD_SetTextColor(CL_WHITE);
+	ILI9341_DispStringLine_EN(LINE(10), "          BACK TO MENU");
+
+	SETTINGS_updateSelect();
+}
+
+void SETTINGS_updateSelect(void)
+{
+	LCD_SetFont(&Font8x16);
+	LCD_SetTextColor(CL_GREEN);
+	ILI9341_Clear(0, LINE(4), 10 * 8, 7 * 16);
+	ILI9341_DispStringLine_EN(LINE(selectSetting + 3), "      >>");
+}
+
+void SETTINGS_DELAY_task(void)
+{
+	ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
+	LCD_SetFont(&Font24x32);
+	LCD_SetTextColor(CL_CYAN);
+	ILI9341_DispString_EN(12, LINE(0), "SELECT DELAY");
+	LCD_SetFont(&Font8x16);
+	LCD_SetTextColor(CL_GREY1);
+	ILI9341_DispString_EN(9 * 8, LINE(2), "K1: Select | K2: Enter");
+	LCD_SetTextColor(CL_GREY3);
+	// title: 0 - 23 | data: 23 - 30 | unit: 30
+	ILI9341_DispStringLine_EN(LINE(4U), "          0.5 seconds");
+	ILI9341_DispStringLine_EN(LINE(5U), "          1 second");
+	ILI9341_DispStringLine_EN(LINE(6U), "          2 seconds");
+	ILI9341_DispStringLine_EN(LINE(7U), "          5 seconds");
+	ILI9341_DispStringLine_EN(LINE(8U), "          10 seconds");
+	ILI9341_DispStringLine_EN(LINE(9U), "          60 seconds");
+	LCD_SetTextColor(CL_WHITE);
+	ILI9341_DispStringLine_EN(LINE(10), "          BACK TO SETTINGS");
+
+	SETTINGS_DELAY_updateSelect();
+}
+
+void SETTINGS_DELAY_updateSelect(void)
+{
+	LCD_SetFont(&Font8x16);
+	LCD_SetTextColor(CL_GREEN);
+	ILI9341_Clear(0, LINE(4), 10 * 8, 7 * 16);
+	ILI9341_DispStringLine_EN(LINE(selectDelay + 3), "      >>");
 }
 
 // key interrupts for different scenes
 void key1_irq_MENU(void)
 {
-	select_isChanged = RT_TRUE;
+	sceneSelect_isChanged = RT_TRUE;
 	selectScene = (selectScene + 1) % 5;
 	if (selectScene == SCENE_MENU) {
 		selectScene = SCENE_DISP_DATA;
@@ -613,12 +887,7 @@ void key2_irq_TAKE_PHOTO(void)
 
 void key1_irq_SD_CARD(void)
 {
-	// release SD card
-	if (sdcard_unmount() != RT_EOK) {
-		isEjectSuccess = RT_FALSE;
-	} else {
-		isEjectSuccess = RT_TRUE;
-	}
+	isEjecting = RT_TRUE;
 }
 
 void key2_irq_SD_CARD(void)
@@ -628,16 +897,36 @@ void key2_irq_SD_CARD(void)
 	currScene = SCENE_MENU;
 }
 
-void key1_irq_SETTING(void)
+void key1_irq_SETTING_SELECT(void)
 {
-	// TODO
+	settingSelect_isChanged = RT_TRUE;
+	selectSetting = (selectSetting + 1) % 8;
+	if (selectSetting == SETTING_NO) {
+		selectSetting = SETTING_HMC5883L;
+	}
 }
 
-void key2_irq_SETTING(void)
+void key2_irq_SETTING_SELECT(void)
 {
-	scene_isChanged = RT_TRUE;
-	prevScene = currScene;
-	currScene = SCENE_MENU;
+	setting_isChanged = RT_TRUE;
+	prevSetting = currSetting;
+	currSetting = selectSetting;
+}
+
+void key1_irq_SETTING_DELAY_SELECT(void)
+{
+	delaySelect_isChanged = RT_TRUE;
+	selectDelay = (selectDelay + 1) % 8;
+	if (selectDelay == DELAY_NO) {
+		selectDelay = DELAY_0_5;
+	}
+}
+
+void key2_irq_SETTING_DELAY_SELECT(void)
+{
+	delay_isChanged = RT_TRUE;
+	prevDelay = currDelay;
+	currDelay = selectDelay;
 }
 
 void my_key_and_led_test(void)
