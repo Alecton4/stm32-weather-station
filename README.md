@@ -45,4 +45,4 @@
 <!-- - [LVGL (GUI library)](https://github.com/lvgl/lvgl) -->
 
 ## How to build
-See [RT-Thread documentation](https://www.rt-thread.org/document/site/#/development-tools/env/env).
+See [RT-Thread documentation](https://www.rt-thread.io/document/site/programming-manual/env/env/).
