@@ -101,16 +101,21 @@ double my_gp2y1014au0f_get_data()
 	// rt_hw_us_delay(9680); //需要脉宽比0.32ms/10ms的PWM信号驱动传感器中的LED
 
 	value = my_filter(value);
-	LOG_D("the value is: %d", value);
+	// for debugging
+	// LOG_D("the value is: %d", value);
+
 	voltage = (value / 4096.0) * VOLTAGE_SYS * 11;
-	LOG_D("the voltage is: %f", voltage);
+	// for debugging
+	// LOG_D("the voltage is: %f", voltage);
+
 	if (voltage >= VOLTAGE_NO_DUST) {
 		voltage -= VOLTAGE_NO_DUST;
 		density = voltage * COV_RATIO;
 	} else {
 		density = 0;
 	}
-	LOG_D("The current dust concentration is: %4.2fug/m3", density);
+	// for debugging
+	// LOG_D("The current dust concentration is: %4.2fug/m3", density);
 
 	HAL_ADC_Stop(&hadc1);
 	return density;
