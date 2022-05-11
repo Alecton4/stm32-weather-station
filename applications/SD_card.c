@@ -47,14 +47,29 @@ void fill_buffer(rt_uint8_t *buff, rt_uint32_t buff_length)
 	}
 }
 
+// void sdcard_appendNewData(char *buffer, uint32_t size)
+// {
+// 	int fd;
+
+// 	/* 以创建和读写模式打开 /text.txt 文件，如果该文件不存在则创建该文件 */
+// 	fd = open("/data.txt", O_WRONLY | O_CREAT | O_APPEND);
+// 	if (fd >= 0) {
+// 		LOG_D("Writing %s to data.txt.\n", buffer);
+// 		// size = sizeof(buffer); // BUG
+// 		write(fd, buffer, size);
+// 		close(fd);
+// 		LOG_D("Write done.\n");
+// 	}
+// }
+
 void sdcard_appendNewData(char *buffer, uint32_t size)
 {
 	int fd;
 
 	/* 以创建和读写模式打开 /text.txt 文件，如果该文件不存在则创建该文件 */
-	fd = open("/data.txt", O_WRONLY | O_CREAT | O_APPEND);
+	fd = open("/data.csv", O_WRONLY | O_CREAT | O_APPEND);
 	if (fd >= 0) {
-		LOG_D("Writing %s to data.txt.\n", buffer);
+		LOG_D("Writing %s to data.csv.\n", buffer);
 		// size = sizeof(buffer); // BUG
 		write(fd, buffer, size);
 		close(fd);

@@ -1,4 +1,4 @@
-# IoT-Smart-Animal-Tracker
+# IoT-Smart-Env-Tracker
 
 ## Overall View
 <img src="img/OverallView.jpg" width="1024">
@@ -16,8 +16,8 @@
 - [x] PM2.5 measurement using GP2Y1014AU0F (ADC).
 - [x] Embedded LED to display device status (GPIO).
 - [x] Photo taking (SCCB).
-- [ ] Environment measurement data and photos can be displayed on LCD (FSMC).
-- [ ] Environment measurement data and photos can be stored in SD card (SDIO, DFS).
+- [x] Environment measurement data and photos can be displayed on LCD (FSMC).
+- [x] Environment measurement data and photos can be stored in SD card (SDIO, DFS).
 - [ ] LCD auto-adjusts brightness according to ambient light (I2C, PWM).
 - [ ] GUI and touch control (FSMC, SPI).
 - [ ] ESP8266 Wi-Fi connection (UART, AT Commands).
@@ -25,7 +25,7 @@
 - [ ] Internet-of-Things. The board can communicate with cloud server through Internet via TCP protocol. It can send data to the server and receive command from the server (UART, TCP, AT Commands).
 - [ ] Hot-swapping pins. There are some pins used by both camera ov7725 and ESP8266. The system can configure the correct states for the pin for each component during run time (UART, GPIO).
 - [x] RTOS integration.
-- [ ] System crash detection and auto reboot (IWDG).
+- [x] System crash detection and auto reboot (IWDG).
 
 ## CubeMX Config
 <img src="img/CubeMX.png" width="1024">
@@ -42,7 +42,7 @@
   - Soft I2C
   - SDIO
 <!-- - [Bosch Sensortec BME280 sensor driver v3.3.4](https://github.com/BoschSensortec/BME280_driver) -->
-- [LVGL (GUI library)](https://github.com/lvgl/lvgl)
+<!-- - [LVGL (GUI library)](https://github.com/lvgl/lvgl) -->
 
 ## How to build
 See [RT-Thread documentation](https://www.rt-thread.org/document/site/#/development-tools/env/env).
